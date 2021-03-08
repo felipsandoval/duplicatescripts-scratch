@@ -2,6 +2,7 @@
 from difflib import SequenceMatcher
 import json
 import zipfile
+import sys
 
 N_BLOCKS = 6
 
@@ -109,9 +110,4 @@ def main(filename):
     print("See", filename + "-*.json files for further details.")
 
 if __name__ == "__main__":
-    my_path = "./projects/"
-    new_path = "./sb3/"
-    """only_files = [f for f in listdir(my_path) if isfile(join(my_path, f))]
-    for file in only_files:
-        main("./projects/" + file)"""
-    main("496015545.sb3")
+    main(sys.argv[1])
