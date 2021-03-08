@@ -76,7 +76,7 @@ class DuplicateScripts:
             blocks = scripts_dict[sprite]
             dups = find_dups(blocks)
             if dups:
-                self.intra_dups_list.append(dups)
+                self.intra_dups_list.append(dups[0])
 
         # Project-wide
         self.project_dups_list = []
