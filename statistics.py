@@ -14,6 +14,8 @@ def json2dna(filename):
     characters = string.ascii_letters + string.punctuation
 
     duplicates = json.loads(open(filename).read())
+    if not duplicates:
+        return (None, None)
     for script in duplicates:
         block_list = []
         for block in script:
@@ -23,8 +25,10 @@ def json2dna(filename):
         scripts.append(''.join(block_list))
     return(scripts, blocks_dict)
 
-if __name__ == "__main__":
-    (scripts, blocks_dict) = json2dna(sys.argv[1])
+def main(filename):
+    (scripts, blocks_dict) = json2dna(filename)
+    if not blocks_dict:
+        return None
     inv_blocks_dict = {v: k for k, v in blocks_dict.items()}
 
     c = Counter(tuple(scripts))
@@ -36,3 +40,6 @@ if __name__ == "__main__":
             print("  ", inv_blocks_dict[char])
     print()
     print("Different:", len(list(c)))
+
+if __name__ == "__main__":
+    main(sys.argv[1])
