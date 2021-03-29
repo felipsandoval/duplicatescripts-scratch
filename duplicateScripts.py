@@ -198,4 +198,4 @@ if __name__ == "__main__":
     """only_files = [f for f in listdir(my_path) if isfile(join(my_path, f))]
     for file in only_files:
         main("./projects/" + file)"""
-    main("test.sb3")
+    main("prueba.sb3")

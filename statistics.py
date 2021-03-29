@@ -10,8 +10,7 @@ def json2dna(filename):
     returns the scripts as characters
     """
     scripts = []
-    blocks_dict = {}  # block -> char
-    characters = string.ascii_letters + string.punctuation
+    blocks_dict = json.loads(open('blocks.json').read())  # block -> char
 
     duplicates = json.loads(open(filename).read())
     if not duplicates:

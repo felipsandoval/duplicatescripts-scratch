@@ -27,6 +27,7 @@ def main (filename):
         cluster = [element + " (" + str(c[element]) + ")" for element in cluster]
         cluster_str = ", ".join(cluster)
         print("%s -- *%s (%s):* %s" % (sum_all, exemplar, c[exemplar], cluster_str))
+    print()
 
 if __name__ == "__main__":
     main(sys.argv[1])

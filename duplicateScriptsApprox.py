@@ -1,7 +1,7 @@
 
 from difflib import SequenceMatcher
 import json
-import zipfile
+#import zipfile
 import sys
 
 N_BLOCKS = 6
@@ -39,9 +39,12 @@ class DuplicateScripts:
 
     def analyze(self, filename):
         """TODO"""
-        zip_file = zipfile.ZipFile(filename, "r")
-        json_project = json.loads(zip_file.open("project.json").read())
-  
+        if filename.endswith(".zip"):
+            zip_file = zipfile.ZipFile(filename, "r")
+            json_project = json.loads(zip_file.open("project.json").read())
+        elif filename.endswith(".json"):
+            json_project = json.loads(open(filename).read())
+
         scripts_dict = {}
 
         # Loops through all sprites
@@ -87,13 +90,14 @@ class DuplicateScripts:
 
     def finalize(self, filename):
         """Output the duplicate scripts detected."""
-        with open(filename + '-intra.json', 'w') as outfile:
+        with open(filename.replace('.json', '') + '-sprite.json', 'w') as outfile:
             json.dump(self.intra_dups_list, outfile)
-        with open(filename + '-project.json', 'w') as outfile:
+        with open(filename.replace('.json', '') + '-project.json', 'w') as outfile:
             json.dump(self.project_dups_list, outfile)
 
-        count = sum([len(listElem) for listElem in self.intra_dups_list])
-        result = ("{} intra-sprite duplicate scripts found in {} different sprites\n".format(count, len(self.intra_dups_list)))
+#        count = sum([len(listElem) for listElem in self.intra_dups_list])
+        count = len(self.intra_dups_list)
+        result = ("{} intra-sprite duplicate scripts found\n".format(count))
         result += ("%d project-wide duplicate scripts found\n" % len(self.project_dups_list))
 
         return result
@@ -107,7 +111,6 @@ def main(filename):
     print()
     duplicate.analyze(filename)
     print(duplicate.finalize(filename))
-    print("See", filename + "-*.json files for further details.")
 
 if __name__ == "__main__":
     main(sys.argv[1])
