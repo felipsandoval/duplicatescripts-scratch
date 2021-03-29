@@ -1,11 +1,12 @@
-
+# FESS TFG
 from difflib import SequenceMatcher
 import json
 import zipfile
 
 N_BLOCKS = 5
 
-LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if", "control_if_else", "control_repeat_until"]
+LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
+               "control_if_else", "control_repeat_until"]
 
 
 class DuplicateScripts:
@@ -25,7 +26,7 @@ class DuplicateScripts:
         """TODO"""
         zip_file = zipfile.ZipFile(filename, "r")
         json_project = json.loads(zip_file.open("project.json").read())
-  
+
         scripts_dict = {}
 
         # Loops through all sprites
@@ -39,8 +40,8 @@ class DuplicateScripts:
                 if isinstance(blocks_value, dict):
                     self.blocks_dict[blocks] = blocks_value
                     #  self.all_blocks.append(blocks_value)
-#            print(sprite, len(self.blocks_dict))
-#            print(self.blocks_dict)
+# print(sprite, len(self.blocks_dict))
+# print(self.blocks_dict)
 
             opcode_dict = {}   # block id -> opcode
             topLevel_list = []  # list of top-level block ids
@@ -62,9 +63,10 @@ class DuplicateScripts:
             blocks = scripts_dict[sprite]
             for i in range(len(blocks)):
                 for j in range(i+1, len(blocks)):
-#                    print(sprite, i, blocks[i], j, blocks[j])
+                    # Print(sprite, i, blocks[i], j, blocks[j])
                     s = SequenceMatcher(None, blocks[i], blocks[j])
-                    match = s.find_longest_match(0, len(blocks[i]), 0, len(blocks[j]))
+                    match = s.find_longest_match(0, len(blocks[i]), 0,
+                                                 len(blocks[j]))
                     if match.size >= N_BLOCKS:
                         print(sprite, match.size, blocks[i][match.a:match.a+match.size])
 
@@ -75,7 +77,7 @@ class DuplicateScripts:
         print(blocks)
         for i in range(len(blocks)):
             for j in range(i+1, len(blocks)):
-#                print(sprite, i, blocks[i], j, blocks[j])
+                # Print(sprite, i, blocks[i], j, blocks[j])
                 s = SequenceMatcher(None, blocks[i], blocks[j])
                 match = s.find_longest_match(0, len(blocks[i]), 0, len(blocks[j]))
                 if match.size >= N_BLOCKS:
@@ -174,7 +176,6 @@ class DuplicateScripts:
 #
 #             block_list = self.search_next(next_block, block_list, block_id, aux_next, else_block)
 #         return block_list
-
 
     def finalize(self):
         """Output the duplicate scripts detected."""
