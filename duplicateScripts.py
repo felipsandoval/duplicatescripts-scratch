@@ -19,6 +19,7 @@ class DuplicateScripts:
         #  self.blocks_dict = {}
         #  self.all_blocks = []
         self.list_duplicate = []
+        print(self.list_duplicate)
         self.blocks_dup = {}
         #  self.list_duplicate_string = []
 

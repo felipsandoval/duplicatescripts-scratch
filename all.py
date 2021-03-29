@@ -3,14 +3,13 @@ import statistics
 import cluster
 import sys
 from os import walk
-
 from datetime import datetime
+
 startTime = datetime.now()
 
 cluster.main("all-project.json")
 
 print(datetime.now() - startTime)
-
 
 #mypath = sys.argv[1]
 #_, _, filenames = next(walk(mypath))

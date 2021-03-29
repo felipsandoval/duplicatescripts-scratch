@@ -95,7 +95,7 @@ class DuplicateScripts:
         with open(filename.replace('.json', '') + '-project.json', 'w') as outfile:
             json.dump(self.project_dups_list, outfile)
 
-#        count = sum([len(listElem) for listElem in self.intra_dups_list])
+#       count = sum([len(listElem) for listElem in self.intra_dups_list])
         count = len(self.intra_dups_list)
         result = ("{} intra-sprite duplicate scripts found\n".format(count))
         result += ("%d project-wide duplicate scripts found\n" % len(self.project_dups_list))
@@ -113,4 +113,5 @@ def main(filename):
     print(duplicate.finalize(filename))
 
 if __name__ == "__main__":
+    # We pass as an argument the Scratch project to analyze 
     main(sys.argv[1])
