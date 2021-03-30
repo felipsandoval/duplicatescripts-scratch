@@ -42,9 +42,14 @@ class DuplicateScripts:
         if filename.endswith(".zip"):
             zip_file = zipfile.ZipFile(filename, "r")
             json_project = json.loads(zip_file.open("project.json").read())
+            print("Estoy leyendo un contenedor .zip, ver donde se descomprime.")
         elif filename.endswith(".json"):
             json_project = json.loads(open(filename).read())
-
+            print("Estoy leyendo un archivo .json")
+        elif filename.endswith(".sb3"):
+            print("Tengo que transformarlo a .zip, descomprimirlo y buscar el fichero .json")
+            pass
+    
         scripts_dict = {}
 
         # Loops through all sprites
