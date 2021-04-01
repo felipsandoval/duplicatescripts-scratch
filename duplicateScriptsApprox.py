@@ -1,8 +1,12 @@
 
 from difflib import SequenceMatcher
 import json
-#import zipfile
+import zipfile
+import zlib
 import sys
+import os
+import pathlib
+import shutil
 
 N_BLOCKS = 6
 
@@ -23,6 +27,18 @@ def find_dups(blocks):
                 return_list.append(blocks[i][match.a:match.a + match.size])
     return return_list
 
+def change_termination(fileIn):
+    """
+    Given a file .sb3 will create a copy and change the final termination to .zip
+    """
+    fileOut = fileIn.split(".")[0] + ".zip"
+    print(fileOut)
+    shutil.copyfile(fileIn, fileOut)
+    zip_file = zipfile.ZipFile(fileOut, "r")
+    test = str(pathlib.Path().absolute()) + "/" + fileIn.split(".")[0]
+    json_project = json.loads(zip_file.open("project.json").read())
+    print("AQUI 2")
+    return json_project
 
 class DuplicateScripts:
     """
@@ -41,19 +57,21 @@ class DuplicateScripts:
         """TODO"""
         if filename.endswith(".zip"):
             zip_file = zipfile.ZipFile(filename, "r")
+            print(zip_file)
             json_project = json.loads(zip_file.open("project.json").read())
             print("Estoy leyendo un contenedor .zip, ver donde se descomprime.")
         elif filename.endswith(".json"):
             json_project = json.loads(open(filename).read())
             print("Estoy leyendo un archivo .json")
         elif filename.endswith(".sb3"):
-            print("Tengo que transformarlo a .zip, descomprimirlo y buscar el fichero .json")
+            json_project = change_termination(filename)
             pass
     
         scripts_dict = {}
 
         # Loops through all sprites
         for sprites_dict in json_project["targets"]:
+
             sprite = sprites_dict["name"]
             blocks_dict = {}
             scripts_dict[sprite] = []
