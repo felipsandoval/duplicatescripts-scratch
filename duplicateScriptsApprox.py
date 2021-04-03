@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Made by Felipe E. Sandoval Sibada
 
 from difflib import SequenceMatcher
 import json
@@ -54,7 +57,7 @@ class DuplicateScripts:
         #  self.list_duplicate_string = []
 
     def analyze(self, filename):
-        """TODO"""
+        """Obtains JSON in case necessary"""
         if filename.endswith(".zip"):
             zip_file = zipfile.ZipFile(filename, "r")
             print(zip_file)
@@ -66,6 +69,8 @@ class DuplicateScripts:
         elif filename.endswith(".sb3"):
             json_project = change_termination(filename)
             pass
+        else:
+            raise TypeError
     
         scripts_dict = {}
 
@@ -130,11 +135,20 @@ def main(filename):
     """The entrypoint for the 'duplicateScripts' extension"""
     duplicate = DuplicateScripts()
     print("Looking for duplicate scripts in", filename)
-    print("Minimum number of blocks:", N_BLOCKS)
     print()
     duplicate.analyze(filename)
+    print("Minimum number of blocks:", N_BLOCKS)
     print(duplicate.finalize(filename))
 
+# Main
 if __name__ == "__main__":
-    # We pass as an argument the Scratch project to analyze 
-    main(sys.argv[1])
+    try:
+        if len(sys.argv) != 2:
+            raise IndexError
+        main(sys.argv[1])
+    except IndexError:
+        sys.exit("\nUsage: python3 duplicateScriptsApprox.py <file(.SB3 or .JSON or .ZIP)>\n")
+    except TypeError:
+        sys.exit("\nPlease, use a valid extension file like .SB3, JSON or .ZIP\n")
+    except:
+        print("\nSomething unexpected happened: ", sys.exc_info()[0])
