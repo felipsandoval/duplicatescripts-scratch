@@ -32,15 +32,21 @@ def find_dups(blocks):
 
 def change_termination(fileIn):
     """
-    Given a file .sb3 will create a copy and change the final termination to .zip
+    Given a file .sb3 will create a new copy changing the file termination to .zip
+    then it will find the .JSON file to return it
     """
     fileOut = fileIn.split(".")[0] + ".zip"
-    print(fileOut)
     shutil.copyfile(fileIn, fileOut)
     zip_file = zipfile.ZipFile(fileOut, "r")
-    test = str(pathlib.Path().absolute()) + "/" + fileIn.split(".")[0]
-    json_project = json.loads(zip_file.open("project.json").read())
-    print("AQUI 2")
+    test = str(pathlib.Path().absolute()) + "/" + str(fileOut)
+    listOfFileNames = zip_file.namelist()
+    # Iterate over the file names
+    for fileName in listOfFileNames:
+        # Check filename endswith json
+        if fileName.endswith('.json'):
+            # Extract a single json file from zip
+            json_file = zip_file.extract(fileName)
+    json_project = json.loads(open(json_file).read())
     return json_project
 
 class DuplicateScripts:
@@ -148,7 +154,7 @@ if __name__ == "__main__":
         main(sys.argv[1])
     except IndexError:
         sys.exit("\nUsage: python3 duplicateScriptsApprox.py <file(.SB3 or .JSON or .ZIP)>\n")
-    except TypeError:
-        sys.exit("\nPlease, use a valid extension file like .SB3, JSON or .ZIP\n")
-    except:
-        print("\nSomething unexpected happened: ", sys.exc_info()[0])
+    #except TypeError:
+    #    sys.exit("\nPlease, use a valid extension file like .SB3, JSON or .ZIP\n")
+    #except:
+    #    print("\nSomething unexpected happened: ", sys.exc_info()[0])
