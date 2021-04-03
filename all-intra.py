@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Made by Felipe E. Sandoval Sibada
+
 from os import walk
 import json
 

@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Made by Felipe E. Sandoval Sibada
+
 import duplicateScriptsApprox
 import statistics
 import cluster
@@ -7,7 +11,7 @@ from datetime import datetime
 
 startTime = datetime.now()
 
-cluster.main("all-project.json")
+cluster.main("project.json")
 
 print(datetime.now() - startTime)
 
