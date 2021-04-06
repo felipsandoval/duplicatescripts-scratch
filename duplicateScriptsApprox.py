@@ -5,7 +5,6 @@
 from difflib import SequenceMatcher
 import json
 import zipfile
-import zlib
 import sys
 import os
 import pathlib
@@ -84,6 +83,7 @@ class DuplicateScripts:
         for sprites_dict in json_project["targets"]:
 
             sprite = sprites_dict["name"]
+            print(sprite)
             blocks_dict = {}
             scripts_dict[sprite] = []
 
