@@ -81,7 +81,7 @@ class DuplicateScripts:
 
         # Loops through all sprites
         for sprites_dict in json_project["targets"]:
-
+            print (len(sprites_dict))
             sprite = sprites_dict["name"]
             print(sprite)
             blocks_dict = {}
