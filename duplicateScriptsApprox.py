@@ -73,7 +73,6 @@ class DuplicateScripts:
             print("Estoy leyendo un archivo .json")
         elif filename.endswith(".sb3"):
             json_project = change_termination(filename)
-            pass
         else:
             raise TypeError
     
@@ -81,16 +80,21 @@ class DuplicateScripts:
 
         # Loops through all sprites
         for sprites_dict in json_project["targets"]:
-            print (len(sprites_dict))
+            #print (len(sprites_dict))
             sprite = sprites_dict["name"]
-            print(sprite)
+            #print(sprite)
             blocks_dict = {}
             scripts_dict[sprite] = []
-
+            #print(scripts_dict)
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
+                #aqui dentro voy pasando por cada uno de los valores del atributo block
+                #print(blocks)
+                #print(blocks_value)
+                #print("solamente paso una vez")
                 if isinstance(blocks_value, dict):
                     blocks_dict[blocks] = blocks_value
+                    #print(blocks_dict[blocks])
 
             opcode_dict = {}   # block id -> opcode
             toplevel_list = []  # list of top-level block ids
@@ -105,7 +109,7 @@ class DuplicateScripts:
                 else:
                     tmp_blocks.append(block["opcode"])
             scripts_dict[sprite].append(tmp_blocks)
-            # print(scripts_dict)
+        print(opcode_dict)
 
         # Intra-sprite
         self.intra_dups_list = []
