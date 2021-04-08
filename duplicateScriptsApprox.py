@@ -29,28 +29,26 @@ def find_dups(blocks):
                 return_list.append(blocks[i][match.a:match.a + match.size])
     return return_list
 
-def change_termination(fileIn):
+def sb3_json_extraction(fileIn):
     """
-    Given a file .sb3 will create a new copy changing the file termination to .zip
-    then it will find the .JSON file to return it
+    Will change the file extention to .zip from a given a .sb3,
+    then will return the .json file inside the Scratch project.
     """
     fileOut = fileIn.split(".")[0] + ".zip"
     shutil.copyfile(fileIn, fileOut)
     zip_file = zipfile.ZipFile(fileOut, "r")
-    test = str(pathlib.Path().absolute()) + "/" + str(fileOut)
     listOfFileNames = zip_file.namelist()
-    # Iterate over the file names
+    # Iterates over the file names to find .json
     for fileName in listOfFileNames:
-        # Check filename endswith json
         if fileName.endswith('.json'):
-            # Extract a single json file from zip
             json_file = zip_file.extract(fileName)
     json_project = json.loads(open(json_file).read())
+    os.remove(fileOut)
     return json_project
 
 class DuplicateScripts:
     """
-    Analyzer of duplicate scripts in sb3 projects sb3
+    Analyzer of duplicate scripts in sb3 projects
     New version for Scratch 3.0
     """
 
@@ -67,12 +65,11 @@ class DuplicateScripts:
             zip_file = zipfile.ZipFile(filename, "r")
             print(zip_file)
             json_project = json.loads(zip_file.open("project.json").read())
-            print("Estoy leyendo un contenedor .zip, ver donde se descomprime.")
+            # Aquí hay que hacer el caso que sean VARIOS archivos.
         elif filename.endswith(".json"):
             json_project = json.loads(open(filename).read())
-            print("Estoy leyendo un archivo .json")
         elif filename.endswith(".sb3"):
-            json_project = change_termination(filename)
+            json_project = sb3_json_extraction(filename)
         else:
             raise TypeError
     
