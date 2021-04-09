@@ -12,7 +12,8 @@ import shutil
 
 N_BLOCKS = 6
 
-LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if", "control_if_else", "control_repeat_until"]
+LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
+               "control_if_else", "control_repeat_until"]
 
 
 def find_dups(blocks):
@@ -29,6 +30,7 @@ def find_dups(blocks):
                 return_list.append(blocks[i][match.a:match.a + match.size])
     return return_list
 
+
 def sb3_json_extraction(fileIn):
     """
     Will change the file extention to .zip from a given a .sb3,
@@ -39,12 +41,14 @@ def sb3_json_extraction(fileIn):
     zip_file = zipfile.ZipFile(fileOut, "r")
     listOfFileNames = zip_file.namelist()
     # Iterates over the file names to find .json
+    print("s")
     for fileName in listOfFileNames:
         if fileName.endswith('.json'):
             json_file = zip_file.extract(fileName)
     json_project = json.loads(open(json_file).read())
-    os.remove(fileOut)
+    #os.remove(fileOut)
     return json_project
+
 
 class DuplicateScripts:
     """
@@ -60,38 +64,35 @@ class DuplicateScripts:
         #  self.list_duplicate_string = []
 
     def analyze(self, filename):
-        """Obtains JSON in case necessary"""
+        """Obtains JSON and start parsering it"""
         if filename.endswith(".zip"):
             zip_file = zipfile.ZipFile(filename, "r")
-            print(zip_file)
+            # Aquí hay que hacer el caso en el que sean VARIOS archivos JSON.
             json_project = json.loads(zip_file.open("project.json").read())
-            # Aquí hay que hacer el caso que sean VARIOS archivos.
         elif filename.endswith(".json"):
             json_project = json.loads(open(filename).read())
         elif filename.endswith(".sb3"):
             json_project = sb3_json_extraction(filename)
         else:
             raise TypeError
-    
+
         scripts_dict = {}
 
         # Loops through all sprites
         for sprites_dict in json_project["targets"]:
-            #print (len(sprites_dict))
+            # Los TARGETS son los sprites, es decir mis objetos + 1 que es el canva o stage.
+            # print(len(json_project["targets"])) esto me imprime la cantidad
+            # de sprites que tenga
             sprite = sprites_dict["name"]
-            #print(sprite)
+            # print(sprite)
             blocks_dict = {}
             scripts_dict[sprite] = []
-            #print(scripts_dict)
+            # print(scripts_dict)
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
-                #aqui dentro voy pasando por cada uno de los valores del atributo block
-                #print(blocks)
-                #print(blocks_value)
-                #print("solamente paso una vez")
                 if isinstance(blocks_value, dict):
                     blocks_dict[blocks] = blocks_value
-                    #print(blocks_dict[blocks])
+                    # print(blocks_dict[blocks])
 
             opcode_dict = {}   # block id -> opcode
             toplevel_list = []  # list of top-level block ids
@@ -125,15 +126,18 @@ class DuplicateScripts:
 
     def finalize(self, filename):
         """Output the duplicate scripts detected."""
-        with open(filename.replace('.json', '') + '-sprite.json', 'w') as outfile:
+        with open(filename.replace('.json', '') + '-sprite.json',
+                  'w') as outfile:
             json.dump(self.intra_dups_list, outfile)
-        with open(filename.replace('.json', '') + '-project.json', 'w') as outfile:
+        with open(filename.replace('.json', '') + '-project.json',
+                  'w') as outfile:
             json.dump(self.project_dups_list, outfile)
 
 #       count = sum([len(listElem) for listElem in self.intra_dups_list])
         count = len(self.intra_dups_list)
         result = ("{} intra-sprite duplicate scripts found\n".format(count))
-        result += ("%d project-wide duplicate scripts found\n" % len(self.project_dups_list))
+        result += ("%d project-wide duplicate scripts found\n" %
+                   len(self.project_dups_list))
 
         return result
 
@@ -147,6 +151,7 @@ def main(filename):
     print("Minimum number of blocks:", N_BLOCKS)
     print(duplicate.finalize(filename))
 
+
 # Main
 if __name__ == "__main__":
     try:
@@ -154,8 +159,10 @@ if __name__ == "__main__":
             raise IndexError
         main(sys.argv[1])
     except IndexError:
-        sys.exit("\nUsage: python3 duplicateScriptsApprox.py <file(.SB3 or .JSON or .ZIP)>\n")
-    #except TypeError:
-    #    sys.exit("\nPlease, use a valid extension file like .SB3, JSON or .ZIP\n")
-    #except:
-    #    print("\nSomething unexpected happened: ", sys.exc_info()[0])
+        sys.exit("\nUsage: python3 duplicateScriptsApprox.py" +
+                 " <file(.SB3 or .JSON or .ZIP)>\n")
+    # except TypeError:
+    #   sys.exit("\nPlease, use a valid extension file like .SB3," +
+    #   " JSON or .ZIP\n")
+    # except:
+    #   print("\nSomething unexpected happened: ", sys.exc_info()[0])
