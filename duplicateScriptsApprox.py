@@ -84,15 +84,12 @@ class DuplicateScripts:
             # print(len(json_project["targets"])) esto me imprime la cantidad
             # de sprites que tenga
             sprite = sprites_dict["name"]
-            # print(sprite)
             blocks_dict = {}
             scripts_dict[sprite] = []
-            # print(scripts_dict)
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
                     blocks_dict[blocks] = blocks_value
-                    # print(blocks_dict[blocks])
 
             opcode_dict = {}   # block id -> opcode
             toplevel_list = []  # list of top-level block ids
@@ -100,12 +97,13 @@ class DuplicateScripts:
             for block_id, block in blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
                 if block["topLevel"]:
+                    print(tmp_blocks)
                     if tmp_blocks:
                         scripts_dict[sprite].append(tmp_blocks)
                     toplevel_list.append(block_id)
                     tmp_blocks = [block["opcode"]]
-                else:
-                    tmp_blocks.append(block["opcode"])
+                #elif block["next"] == None:
+                #    print("entré")
             scripts_dict[sprite].append(tmp_blocks)
         print(opcode_dict)
 
@@ -133,7 +131,7 @@ class DuplicateScripts:
                   'w') as outfile:
             json.dump(self.project_dups_list, outfile)
 
-#       count = sum([len(listElem) for listElem in self.intra_dups_list])
+        count = sum([len(listElem) for listElem in self.intra_dups_list])
         count = len(self.intra_dups_list)
         result = ("{} intra-sprite duplicate scripts found\n".format(count))
         result += ("%d project-wide duplicate scripts found\n" %
