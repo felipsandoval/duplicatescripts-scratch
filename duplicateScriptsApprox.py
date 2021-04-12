@@ -41,12 +41,11 @@ def sb3_json_extraction(fileIn):
     zip_file = zipfile.ZipFile(fileOut, "r")
     listOfFileNames = zip_file.namelist()
     # Iterates over the file names to find .json
-    print("s")
     for fileName in listOfFileNames:
         if fileName.endswith('.json'):
             json_file = zip_file.extract(fileName)
     json_project = json.loads(open(json_file).read())
-    #os.remove(fileOut)
+    os.remove(fileOut)
     return json_project
 
 
@@ -57,6 +56,7 @@ class DuplicateScripts:
     """
 
     def __init__(self):
+        # LA DFERENCIA DE USAR ESTO O NO???
         #  self.blocks_dict = {}
         #  self.all_blocks = []
         self.list_duplicate = []
@@ -86,26 +86,31 @@ class DuplicateScripts:
             sprite = sprites_dict["name"]
             blocks_dict = {}
             scripts_dict[sprite] = []
+            # print(scripts_dict)
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
                     blocks_dict[blocks] = blocks_value
-
             opcode_dict = {}   # block id -> opcode
             toplevel_list = []  # list of top-level block ids
+            nextnull_list = []  # list of 'next = null' block ids
+            parentnull_list = []  # list of 'parent = null' block ids
             tmp_blocks = []
             for block_id, block in blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
                 if block["topLevel"]:
-                    print(tmp_blocks)
+                    #print(tmp_blocks)
                     if tmp_blocks:
                         scripts_dict[sprite].append(tmp_blocks)
                     toplevel_list.append(block_id)
                     tmp_blocks = [block["opcode"]]
-                #elif block["next"] == None:
-                #    print("entré")
+                if block["next"] == None:
+                    nextnull_list.append(block_id)
+                if block["parent"] == None:
+                    parentnull_list.append(block_id)
             scripts_dict[sprite].append(tmp_blocks)
-        print(opcode_dict)
+        print(nextnull_list)
+        print(len(parentnull_list))
 
         # Intra-sprite
         self.intra_dups_list = []
@@ -146,7 +151,7 @@ def main(filename):
     print("Looking for duplicate scripts in", filename)
     print()
     duplicate.analyze(filename)
-    print("Minimum number of blocks:", N_BLOCKS)
+    print("Minimum number of blocks:", N_BLOCKS) # QUE ES ESTO ??
     print(duplicate.finalize(filename))
 
 
