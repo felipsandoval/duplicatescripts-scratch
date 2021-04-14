@@ -15,6 +15,7 @@ def main (filename):
     # Affinity propagation clustering
     # Taken from https://stats.stackexchange.com/questions/123060/clustering-a-long-list-of-strings-words-into-similarity-groups
     words = list(set(scripts))
+    #print(words)
     words = np.asarray(words)  # So that indexing with a list will work
     lev_similarity = -1 * np.array([[distance.levenshtein(w1, w2) for w1 in words] for w2 in words])
 

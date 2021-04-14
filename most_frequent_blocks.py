@@ -8,17 +8,18 @@ import json
 from collections import defaultdict, OrderedDict
 import string
 
-d = defaultdict(int)
-ordered = OrderedDict()
+def main (filename):
+    d = defaultdict(int)
+    ordered = OrderedDict()
 
-characters = string.ascii_letters + string.punctuation + string.digits
-characters += "€£ñÑçÇáÁéÉíÍóÓúÚäÄëËïÏöÖüÜàÀèÈìÌòÒùÙâÂêÊîÎôÔûÛ¶§©ŠØ®ГДЕЖИЛśĥčýÿў±žПШΘЯбψξλσαβδ"
+    characters = string.ascii_letters + string.punctuation + string.digits
+    characters += "€£ñÑçÇáÁéÉíÍóÓúÚäÄëËïÏöÖüÜàÀèÈìÌòÒùÙâÂêÊîÎôÔûÛ¶§©ŠØ®ГДЕЖИЛśĥčýÿў±žПШΘЯбψξλσαβδ"
 
-mypath = sys.argv[1]
-_, _, filenames = next(walk(mypath))
-for filename in filenames:
-    json_project = json.loads(open(mypath + filename).read())
-
+    #mypath = sys.argv[1]
+    #_, _, filenames = next(walk(mypath))
+    #for filename in filenames:
+    #    json_project = json.loads(open(mypath + filename).read())
+    json_project = json.loads(open(filename).read())
     # Loops through all sprites
     for sprites_dict in json_project["targets"]:
         sprite = sprites_dict["name"]
@@ -30,9 +31,12 @@ for filename in filenames:
             except TypeError:
                 pass
 
-most_frequent = sorted(d.items(), key=lambda kv: kv[1], reverse=True)
-for block, frequency in most_frequent:
-    ordered[block] = characters[len(ordered)]
+    most_frequent = sorted(d.items(), key=lambda kv: kv[1], reverse=True)
+    for block, frequency in most_frequent:
+        ordered[block] = characters[len(ordered)]
 
-with open('blocks.json', 'w') as outfile:
-    json.dump(dict(ordered), outfile, indent=4)
+    with open('blocks.json', 'w') as outfile:
+        json.dump(dict(ordered), outfile, indent=4)
+
+if __name__ == "__main__":
+    main(sys.argv[1])    

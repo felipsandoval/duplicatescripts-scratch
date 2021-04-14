@@ -28,7 +28,7 @@ def find_dups(blocks):
             s = SequenceMatcher(None, blocks[i], blocks[j])
             #print(s.ratio()*100)
             match = s.find_longest_match(0, len(blocks[i]), 0, len(blocks[j]))
-            print(match.size)
+            #print(match.size)
             if match.size >= N_BLOCKS:
                 return_list.append(blocks[i][match.a:match.a + match.size])
     return return_list
@@ -66,7 +66,7 @@ class DuplicateScripts:
         self.blocks_dup = {}
         self.toplevel_list = []
         self.nextnull_list = []
-        self.parentnull_list = []
+        self.parentnull_list = {}
         #  self.list_duplicate_string = []
 
     def analyze(self, filename):
@@ -84,14 +84,12 @@ class DuplicateScripts:
 
         scripts_dict = {}
 
-        # Loops through all sprites
+        # Loops through all sprites (all sprites + 1 for canva sprite)
         for sprites_dict in json_project["targets"]:
-            # Los TARGETS son los sprites, es decir mis objetos + 1 que es el canva o stage.
-            # print(len(json_project["targets"])) esto me imprime la cantidad
-            # de sprites que tenga
             sprite = sprites_dict["name"]
             blocks_dict = {}
             scripts_dict[sprite] = []
+            self.parentnull_list[sprite] = []
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
@@ -106,6 +104,7 @@ class DuplicateScripts:
                     if tmp_blocks:
                         scripts_dict[sprite].append(tmp_blocks)
                     self.toplevel_list.append(block_id)
+                    self.parentnull_list[sprite].append(block_id)
                     tmp_blocks = [block["opcode"]]
                 else:
                     tmp_blocks.append(block["opcode"])
@@ -113,11 +112,13 @@ class DuplicateScripts:
                 #    self.nextnull_list.append(block_id)
                 #if block["parent"] == None: #PARENT NO SIEMPRE ESTÁ EN TODOS LOS SPRITES??
                 #    self.parentnull_list.append(block_id)
+                print(tmp_blocks)
             scripts_dict[sprite].append(tmp_blocks)
             #print(scripts_dict)
+            #print(tmp_blocks)
 
         #print(len(self.nextnull_list))
-        #print(len(self.parentnull_list))
+        print(tmp_blocks)
         #print(len(self.toplevel_list))
         #print(self.toplevel_list)
 
