@@ -24,8 +24,11 @@ def find_dups(blocks):
     return_list = []
     for i in range(len(blocks)):
         for j in range(i + 1, len(blocks)):
+            #print(blocks[i], blocks[j])
             s = SequenceMatcher(None, blocks[i], blocks[j])
+            #print(s.ratio()*100)
             match = s.find_longest_match(0, len(blocks[i]), 0, len(blocks[j]))
+            print(match.size)
             if match.size >= N_BLOCKS:
                 return_list.append(blocks[i][match.a:match.a + match.size])
     return return_list
@@ -61,6 +64,9 @@ class DuplicateScripts:
         #  self.all_blocks = []
         self.list_duplicate = []
         self.blocks_dup = {}
+        self.toplevel_list = []
+        self.nextnull_list = []
+        self.parentnull_list = []
         #  self.list_duplicate_string = []
 
     def analyze(self, filename):
@@ -86,15 +92,12 @@ class DuplicateScripts:
             sprite = sprites_dict["name"]
             blocks_dict = {}
             scripts_dict[sprite] = []
-            # print(scripts_dict)
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
                     blocks_dict[blocks] = blocks_value
             opcode_dict = {}   # block id -> opcode
-            toplevel_list = []  # list of top-level block ids
-            nextnull_list = []  # list of 'next = null' block ids
-            parentnull_list = []  # list of 'parent = null' block ids
+            #toplevel_list = []  # list of top-level block ids
             tmp_blocks = []
             for block_id, block in blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
@@ -102,20 +105,27 @@ class DuplicateScripts:
                     #print(tmp_blocks)
                     if tmp_blocks:
                         scripts_dict[sprite].append(tmp_blocks)
-                    toplevel_list.append(block_id)
+                    self.toplevel_list.append(block_id)
                     tmp_blocks = [block["opcode"]]
-                if block["next"] == None:
-                    nextnull_list.append(block_id)
-                if block["parent"] == None:
-                    parentnull_list.append(block_id)
+                else:
+                    tmp_blocks.append(block["opcode"])
+                #if block["next"] == None:
+                #    self.nextnull_list.append(block_id)
+                #if block["parent"] == None: #PARENT NO SIEMPRE ESTÁ EN TODOS LOS SPRITES??
+                #    self.parentnull_list.append(block_id)
             scripts_dict[sprite].append(tmp_blocks)
-        print(nextnull_list)
-        print(len(parentnull_list))
+            #print(scripts_dict)
+
+        #print(len(self.nextnull_list))
+        #print(len(self.parentnull_list))
+        #print(len(self.toplevel_list))
+        #print(self.toplevel_list)
 
         # Intra-sprite
         self.intra_dups_list = []
         for sprite in scripts_dict:
             blocks = scripts_dict[sprite]
+            #print(blocks)
             dups = find_dups(blocks)
             if dups:
                 self.intra_dups_list.append(dups[0])
