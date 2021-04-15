@@ -11,7 +11,7 @@ import pathlib
 import shutil
 
 N_BLOCKS = 6
-
+Ignore = 3
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
                "control_if_else", "control_repeat_until"]
 
@@ -25,7 +25,7 @@ def find_dups(blocks):
     for i in range(len(blocks)):
         for j in range(i + 1, len(blocks)):
             #print(blocks[i], blocks[j])
-            s = SequenceMatcher(None, blocks[i], blocks[j])
+            s = SequenceMatcher(None, blocks[i], blocks[j]) 
             #print(s.ratio()*100)
             match = s.find_longest_match(0, len(blocks[i]), 0, len(blocks[j]))
             #print(match.size)
@@ -152,7 +152,6 @@ class DuplicateScripts:
         result = ("{} intra-sprite duplicate scripts found\n".format(count))
         result += ("%d project-wide duplicate scripts found\n" %
                    len(self.project_dups_list))
-
         return result
 
 
@@ -169,12 +168,16 @@ def main(filename):
 # Main
 if __name__ == "__main__":
     try:
-        if len(sys.argv) != 2:
+        if len(sys.argv) == 2:
+            main(sys.argv[1])
+        elif len(sys.argv) == 3 and str(sys.argv[2]) == "-i":
+                sys.exit("\ncaso de bloques a ignorar\n")
+        else:
             raise IndexError
-        main(sys.argv[1])
     except IndexError:
         sys.exit("\nUsage: python3 duplicateScriptsApprox.py" +
-                 " <file(.SB3 or .JSON or .ZIP)>\n")
+                 " <file(.SB3 or .JSON or .ZIP)> [-i]\n" +
+                 "\n-i (OPTIONAL): Ignore blocks from IgnoreBlocks.txt\n")
     # except TypeError:
     #   sys.exit("\nPlease, use a valid extension file like .SB3," +
     #   " JSON or .ZIP\n")
