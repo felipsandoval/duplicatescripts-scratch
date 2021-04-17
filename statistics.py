@@ -7,6 +7,7 @@ import json
 import string
 import sys
 
+
 def json2dna(filename):
     """
     Given a JSON file as given in duplicateScriptsApprox.py
@@ -15,7 +16,8 @@ def json2dna(filename):
     """
     scripts = []
     blocks_dict = json.loads(open('blocks.json').read())  # block -> char
-
+    characters = string.ascii_letters + string.punctuation + string.digits
+    characters += "€£ñÑçÇáÁéÉíÍóÓúÚäÄëËïÏöÖüÜàÀèÈìÌòÒùÙâÂêÊîÎôÔûÛ¶§©ŠØ®ГДЕЖИЛśĥčýÿў±žПШΘЯбψξλσαβδ"
     duplicates = json.loads(open(filename).read())
     if not duplicates:
         return (None, None)
@@ -23,6 +25,7 @@ def json2dna(filename):
         block_list = []
         for block in script:
             if block not in blocks_dict:
+                print("aqui estoy")
                 blocks_dict[block] = characters[len(blocks_dict)]
             block_list.append(blocks_dict[block])
         scripts.append(''.join(block_list))
