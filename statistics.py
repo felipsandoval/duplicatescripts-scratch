@@ -25,10 +25,12 @@ def json2dna(filename):
         block_list = []
         for block in script:
             if block not in blocks_dict:
-                print("aqui estoy")
-                blocks_dict[block] = characters[len(blocks_dict)]
+                #print("aqui estoy")
+                blocks_dict[block] = characters[len(blocks_dict)]#NO SE QUE HACE
             block_list.append(blocks_dict[block])
+            #print(block_list)
         scripts.append(''.join(block_list))
+        #print(scripts)
     return(scripts, blocks_dict)
 
 def main(filename):
@@ -36,8 +38,9 @@ def main(filename):
     if not blocks_dict:
         return None
     inv_blocks_dict = {v: k for k, v in blocks_dict.items()}
-
+    print(scripts)
     c = Counter(tuple(scripts))
+    print(c)
     most_common = c.most_common(10)
     print("10 most common:")
     for most in most_common:

@@ -8,7 +8,7 @@ import zipfile
 import sys
 import os
 import pathlib
-import shutil
+import shutils
 
 N_BLOCKS = 6
 Ignore = 3
