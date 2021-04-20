@@ -8,7 +8,7 @@ import zipfile
 import sys
 import os
 import pathlib
-import shutils
+import shutil
 
 N_BLOCKS = 6
 Ignore = 3
@@ -33,6 +33,15 @@ def find_dups(blocks):
                 return_list.append(blocks[i][match.a:match.a + match.size])
     return return_list
 
+def blocks2ignore():
+    """
+    Open .TXT and parser the blocks that are going to be ignored
+    as duplicated
+    """
+    with open('IgnoreBlocks.txt') as f:
+        ignore_list = f.read().splitlines()
+    f.close
+    return ignore_list
 
 def sb3_json_extraction(fileIn):
     """
@@ -83,7 +92,9 @@ class DuplicateScripts:
             raise TypeError
 
         scripts_dict = {}
-
+        ignoreblock_list = blocks2ignore()
+        print(ignoreblock_list)
+        
         # Loops through all sprites (all sprites + 1 for canva sprite)
         for sprites_dict in json_project["targets"]:
             sprite = sprites_dict["name"]
@@ -112,13 +123,13 @@ class DuplicateScripts:
                 #    self.nextnull_list.append(block_id)
                 #if block["parent"] == None: #PARENT NO SIEMPRE ESTÁ EN TODOS LOS SPRITES??
                 #    self.parentnull_list.append(block_id)
-                print(tmp_blocks)
+                #print(tmp_blocks)
             scripts_dict[sprite].append(tmp_blocks)
             #print(scripts_dict)
             #print(tmp_blocks)
 
         #print(len(self.nextnull_list))
-        print(tmp_blocks)
+        #print(tmp_blocks)
         #print(len(self.toplevel_list))
         #print(self.toplevel_list)
 
