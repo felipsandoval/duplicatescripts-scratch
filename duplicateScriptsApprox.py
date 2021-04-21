@@ -61,16 +61,16 @@ def sb3_json_extraction(fileIn):
     return json_project
 
 
-class DuplicateScripts:
+class DuplicateScripts():
     """
     Analyzer of duplicate scripts in sb3 projects
     New version for Scratch 3.0
     """
 
-    def __init__(self):
-        # LA DFERENCIA DE USAR ESTO O NO???
+    def __init__(self, ignoring):
         #  self.blocks_dict = {}
         #  self.all_blocks = []
+        self.ignoringisactive = ignoring
         self.list_duplicate = []
         self.blocks_dup = {}
         self.toplevel_list = []
@@ -93,8 +93,7 @@ class DuplicateScripts:
 
         scripts_dict = {}
         ignoreblock_list = blocks2ignore()
-        print(ignoreblock_list)
-        
+
         # Loops through all sprites (all sprites + 1 for canva sprite)
         for sprites_dict in json_project["targets"]:
             sprite = sprites_dict["name"]
@@ -110,28 +109,37 @@ class DuplicateScripts:
             tmp_blocks = []
             for block_id, block in blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
-                if block["topLevel"]:
-                    #print(tmp_blocks)
-                    if tmp_blocks:
-                        scripts_dict[sprite].append(tmp_blocks)
-                    self.toplevel_list.append(block_id)
-                    self.parentnull_list[sprite].append(block_id)
-                    tmp_blocks = [block["opcode"]]
+                if self.ignoringisactive:
+                    if block["opcode"] not in ignoreblock_list:
+                        if block["topLevel"]:
+                            #print(tmp_blocks)
+                            if tmp_blocks:
+                                scripts_dict[sprite].append(tmp_blocks)
+                            self.toplevel_list.append(block_id)
+                            self.parentnull_list[sprite].append(block_id)
+                            tmp_blocks = [block["opcode"]]
+                        else:
+                            tmp_blocks.append(block["opcode"])
+                        #if block["next"] == None:
+                        #    self.nextnull_list.append(block_id)
+                        #if block["parent"] == None: #PARENT NO SIEMPRE ESTÁ EN TODOS LOS SPRITES??
+                        #    self.parentnull_list.append(block_id)
+                        #print(tmp_blocks)
+                    else:
+                        print("IGNORO BLOQUE")
                 else:
-                    tmp_blocks.append(block["opcode"])
-                #if block["next"] == None:
-                #    self.nextnull_list.append(block_id)
-                #if block["parent"] == None: #PARENT NO SIEMPRE ESTÁ EN TODOS LOS SPRITES??
-                #    self.parentnull_list.append(block_id)
-                #print(tmp_blocks)
+                    if block["topLevel"]:
+                        #print(tmp_blocks)
+                        if tmp_blocks:
+                            scripts_dict[sprite].append(tmp_blocks)
+                        self.toplevel_list.append(block_id)
+                        self.parentnull_list[sprite].append(block_id)
+                        tmp_blocks = [block["opcode"]]
+                    else:
+                        tmp_blocks.append(block["opcode"])
             scripts_dict[sprite].append(tmp_blocks)
-            #print(scripts_dict)
-            #print(tmp_blocks)
 
-        #print(len(self.nextnull_list))
-        #print(tmp_blocks)
-        #print(len(self.toplevel_list))
-        #print(self.toplevel_list)
+        print(scripts_dict)
 
         # Intra-sprite
         self.intra_dups_list = []
@@ -166,13 +174,13 @@ class DuplicateScripts:
         return result
 
 
-def main(filename):
+def main(filename, ignoring):
     """The entrypoint for the 'duplicateScripts' extension"""
-    duplicate = DuplicateScripts()
+    duplicate = DuplicateScripts(ignoring)
     print("Looking for duplicate scripts in", filename)
     print()
     duplicate.analyze(filename)
-    print("Minimum number of blocks:", N_BLOCKS) # QUE ES ESTO ??
+    print("Minimum number of blocks:", N_BLOCKS)
     print(duplicate.finalize(filename))
 
 
@@ -180,9 +188,10 @@ def main(filename):
 if __name__ == "__main__":
     try:
         if len(sys.argv) == 2:
-            main(sys.argv[1])
+            main(sys.argv[1], False)
         elif len(sys.argv) == 3 and str(sys.argv[2]) == "-i":
-                sys.exit("\ncaso de bloques a ignorar\n")
+            print("\nYou are now ignoring blocks\n")
+            main(sys.argv[1], True)
         else:
             raise IndexError
     except IndexError:
@@ -192,5 +201,5 @@ if __name__ == "__main__":
     # except TypeError:
     #   sys.exit("\nPlease, use a valid extension file like .SB3," +
     #   " JSON or .ZIP\n")
-    # except:
-    #   print("\nSomething unexpected happened: ", sys.exc_info()[0])
+    except:
+        sys.exit("\nSomething unexpected happened: ", sys.exc_info()[0])
