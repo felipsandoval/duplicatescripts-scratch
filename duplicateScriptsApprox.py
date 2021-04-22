@@ -184,7 +184,6 @@ def main(filename, ignoring):
     print(duplicate.finalize(filename))
 
 
-# Main
 if __name__ == "__main__":
     try:
         if len(sys.argv) == 2:
