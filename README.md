@@ -1,4 +1,4 @@
-Duplicate Scripts: Análisis de proyectos en Scratch
+Duplicate Scripts: Análisis de proyectos e intra-sprite en la duplicidad de código en Scratch
 =============
 <br>
 El programa tienen como finalidad analizar y extraer datos relativos a los duplicidad de código en los proyectos de Scratch. 
@@ -12,7 +12,7 @@ python3 program.py <fichero(.SB3 o .JSON o .ZIP)> [-i]
 
 -i (OPCIONAL): Ignora los opcodes de bloques especificados en IgnoreBlocks.txt
 
-Duplicate Scripts: For project analysis on Scratch
+Duplicate Scripts: For project and intra-sprite analysis on Scratch
 =============
 <br>
 Scripts are applied to analyze and extract data regarding duplicates scripts on Scratch projects. 
