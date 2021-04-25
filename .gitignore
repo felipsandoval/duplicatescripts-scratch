@@ -1,6 +1,5 @@
 
 .DS_Store
-*.pyc
 testinglists.py
 Proyecto de Scratch.sb3
 ProyectoScratch.json
@@ -10,7 +9,6 @@ pruebita.json
 pruebita-sprite.json
 pruebita-project.json
 project.json
-program.py
 loop.json
 loop-sprite.json
 loop-project.json
