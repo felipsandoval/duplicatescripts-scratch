@@ -26,6 +26,7 @@ from datetime import datetime
 
 def main(filename, ignoring):
     """MAIN PROGRAM"""
+    print("\n-- STARTING ANALYSIS --\n")
     duplicateScriptsApprox.main(filename, ignoring)
     most_frequent_blocks.main(filename)
     spritefile = filename.replace('.json', '') + '-sprite.json'
@@ -34,6 +35,9 @@ def main(filename, ignoring):
     statistics.main(spritefile)
     print("\n-- INTRA PROJECT STATISTICS --\n")
     statistics.main(projectfile)
+    print("\n-- CLUSTER SCRIPT --\n")
+    cluster.main(filename)
+
 
 if __name__ == "__main__":
     try:
