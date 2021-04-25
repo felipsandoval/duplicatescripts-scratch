@@ -16,14 +16,14 @@ try:
 except ImportError:
     pip(['install', '--user', 'distance'])
     import distance
-#try:
-#    from sklearn.cluster import AffinityPropagation
-#except ImportError:
-#    pip(['install', '--user', 'scikit-learn'])
-#    pip(['install', '--user', 'sklearn.cluster'])
-#    pip(['install', '--user', 'spicy'])
-#    pip(['install', '--user', 'matplotlib'])
-#    from sklearn.cluster import AffinityPropagation
+try:
+    from sklearn.cluster import AffinityPropagation
+except ImportError:
+    pip(['install', '--user', 'scikit-learn'])
+    pip(['install', '--user', 'sklearn.cluster'])
+    pip(['install', '--user', 'spicy'])
+    pip(['install', '--user', 'matplotlib'])
+    from sklearn.cluster import AffinityPropagation
 
 def install(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
