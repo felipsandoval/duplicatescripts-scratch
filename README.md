@@ -4,7 +4,6 @@ Duplicate Scripts: Análisis de proyectos en Scratch
 El programa tienen como finalidad analizar y extraer datos relativos a los duplicidad de código en los proyectos de Scratch. 
 
 Dado el archivo JSON dentro de los formatos de archivo de Scratch (.SB3) el objetivo es elegir y recopilar los atributos relevantes de cada Sprite, procesar esta información con un algoritmo de clustering, y dar una retroalimentación estadística e informativa tanto de la duplicidad intra-sprite como a nivel de proyecto.
-
 <br>
 
 ### USO
