@@ -6,12 +6,9 @@ from difflib import SequenceMatcher
 import json
 import zipfile
 import sys
-import os
-import pathlib
 import shutil
 
 N_BLOCKS = 6
-Ignore = 3
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
                "control_if_else", "control_repeat_until"]
 
@@ -35,8 +32,8 @@ def find_dups(blocks):
 
 def blocks2ignore():
     """
-    Open .TXT and parser the blocks that are going to be ignored
-    as duplicated
+    Open .TXT and parser the blocks opcodes that are going to be ignored
+    as duplicated scripts
     """
     with open('IgnoreBlocks.txt') as f:
         ignore_list = f.read().splitlines()
@@ -68,51 +65,51 @@ class DuplicateScripts():
     """
 
     def __init__(self, ignoring):
-        #  self.blocks_dict = {}
-        #  self.all_blocks = []
         self.ignoringisactive = ignoring
         self.list_duplicate = []
         self.blocks_dup = {}
         self.toplevel_list = []
-        self.nextnull_list = []
-        self.parentnull_list = {}
-        #  self.list_duplicate_string = []
 
     def analyze(self, filename):
         """Obtains JSON and start parsering it"""
-        if filename.endswith(".zip"):
-            zip_file = zipfile.ZipFile(filename, "r")
-            # Aquí hay que hacer el caso en el que sean VARIOS archivos JSON.
-            json_project = json.loads(zip_file.open("project.json").read())
-        elif filename.endswith(".json"):
-            json_project = json.loads(open(filename).read())
-        elif filename.endswith(".sb3"):
-            json_project = sb3_json_extraction(filename)
-        else:
-            raise TypeError
+        try:
+            if filename.endswith(".zip"):
+                zip_file = zipfile.ZipFile(filename, "r")
+                # Aquí hay que hacer el caso en el que sean VARIOS archivos JSON.
+                json_project = json.loads(zip_file.open("project.json").read())
+            elif filename.endswith(".json"):
+                json_project = json.loads(open(filename).read())
+            elif filename.endswith(".sb3"):
+                json_project = sb3_json_extraction(filename)
+        except:
+                sys.exit("\nPlease, use a valid extension file like .SB3," +
+                " JSON or .ZIP\n")
 
         scripts_dict = {}
         ignoreblock_list = blocks2ignore()
-
-        # Loops through all sprites (all sprites + 1 for canva sprite)
+        loop_blocksid = []
+        # Loops through all sprites (and canva "sprite" too)
         for sprites_dict in json_project["targets"]:
             sprite = sprites_dict["name"]
             blocks_dict = {}
             scripts_dict[sprite] = []
-            self.parentnull_list[sprite] = []
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
                     blocks_dict[blocks] = blocks_value
             opcode_dict = {}   # block id -> opcode
-            #toplevel_list = []  # list of top-level block ids
             tmp_blocks = []
             for block_id, block in blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
+                if block["opcode"] in LOOP_BLOCKS:
+                    print("hay un loop o condicional")
+                    loop_blocksid = [block["opcode"]]
+                    first_in_loop = block["inputs"]["SUBSTACK"][1] #LOS DE CONDICIONES TIENEN SUBSTACK2
+                    print(first_in_loop)
+
                 if self.ignoringisactive:
                     if block["opcode"] not in ignoreblock_list:
                         if block["topLevel"]:
-                            #print(tmp_blocks)
                             if tmp_blocks:
                                 scripts_dict[sprite].append(tmp_blocks)
                             self.toplevel_list.append(block_id)
@@ -120,26 +117,18 @@ class DuplicateScripts():
                             tmp_blocks = [block["opcode"]]
                         else:
                             tmp_blocks.append(block["opcode"])
-                        #if block["next"] == None:
-                        #    self.nextnull_list.append(block_id)
-                        #if block["parent"] == None: #PARENT NO SIEMPRE ESTÁ EN TODOS LOS SPRITES??
-                        #    self.parentnull_list.append(block_id)
-                        #print(tmp_blocks)
                     else:
                         print("IGNORO BLOQUE")
                 else:
                     if block["topLevel"]:
-                        #print(tmp_blocks)
                         if tmp_blocks:
                             scripts_dict[sprite].append(tmp_blocks)
-                        self.toplevel_list.append(block_id)
-                        self.parentnull_list[sprite].append(block_id)
                         tmp_blocks = [block["opcode"]]
                     else:
                         tmp_blocks.append(block["opcode"])
             scripts_dict[sprite].append(tmp_blocks)
 
-        print(scripts_dict)
+        #print(scripts_dict)
 
         # Intra-sprite
         self.intra_dups_list = []
@@ -197,8 +186,5 @@ if __name__ == "__main__":
         sys.exit("\nUsage: python3 duplicateScriptsApprox.py" +
                  " <file(.SB3 or .JSON or .ZIP)> [-i]\n" +
                  "\n-i (OPTIONAL): Ignore blocks from IgnoreBlocks.txt\n")
-    # except TypeError:
-    #   sys.exit("\nPlease, use a valid extension file like .SB3," +
-    #   " JSON or .ZIP\n")
     except:
         sys.exit("\nSomething unexpected happened: ", sys.exc_info()[0])
