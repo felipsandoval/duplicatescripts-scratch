@@ -25,7 +25,7 @@ def json2dna(filename):
         block_list = []
         for block in script:
             if block not in blocks_dict:
-                blocks_dict[block] = characters[len(blocks_dict)]#NO SE QUE HACE
+                blocks_dict[block] = characters[len(blocks_dict)]# Para asignar uno nuevo con su nueva letra
             block_list.append(blocks_dict[block])
         scripts.append(''.join(block_list))
     return(scripts, blocks_dict)
