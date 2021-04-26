@@ -143,8 +143,8 @@ class DuplicateScripts():
                         tmp_blocks.append(block["opcode"])
             scripts_dict[sprite].append(tmp_blocks)
 
-        print(scripts_dict)
-        print(self.loop_dict)
+        #print(scripts_dict)
+        #print(self.loop_dict)
 
         # Intra-sprite
         self.intra_dups_list = []
