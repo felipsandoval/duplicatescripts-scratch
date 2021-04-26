@@ -57,6 +57,25 @@ def sb3_json_extraction(fileIn):
     os.remove(fileOut)
     return json_project
 
+def ordering_json(target): # FALTA POR COMPLETAR
+    sprite = target["name"]
+    blocks_dict = {}
+    scripts_dict[sprite] = []
+    # Gets all blocks out of sprite
+    for blocks, blocks_value in target["blocks"].items():
+        if isinstance(blocks_value, dict):
+            blocks_dict[blocks] = blocks_value
+    opcode_dict = {}   # block id -> opcode
+    tmp_blocks = []
+    order_loop = []
+    for block_id, block in blocks_dict.items():
+        if block["topLevel"]:
+            if tmp_blocks:
+                scripts_dict[sprite].append(tmp_blocks)
+            tmp_blocks = [block["opcode"]]
+        else:
+            tmp_blocks.append(block["opcode"])
+    scripts_dict[sprite].append(tmp_blocks)
 
 class DuplicateScripts():
     """
