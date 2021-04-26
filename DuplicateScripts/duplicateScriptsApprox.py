@@ -66,10 +66,8 @@ class DuplicateScripts():
 
     def __init__(self, ignoring):
         self.ignoringisactive = ignoring
-        self.list_duplicate = []
-        self.blocks_dup = {}
         self.toplevel_list = []
-
+        self.loop_dict = {}
     def analyze(self, filename):
         """Obtains JSON and start parsering it"""
         try:
@@ -87,48 +85,47 @@ class DuplicateScripts():
 
         scripts_dict = {}
         ignoreblock_list = blocks2ignore()
-        loop_blocksid = []
         # Loops through all sprites (and canva "sprite" too)
         for sprites_dict in json_project["targets"]:
             sprite = sprites_dict["name"]
             blocks_dict = {}
             scripts_dict[sprite] = []
+            self.loop_dict[sprite] = []
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
                     blocks_dict[blocks] = blocks_value
             opcode_dict = {}   # block id -> opcode
             tmp_blocks = []
+            order_loop = []
             for block_id, block in blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
-                if block["opcode"] in LOOP_BLOCKS:
-                    print("hay un loop o condicional")
-                    loop_blocksid = [block["opcode"]]
-                    first_in_loop = block["inputs"]["SUBSTACK"][1] #LOS DE CONDICIONES TIENEN SUBSTACK2
-                    print(first_in_loop)
-
-                if self.ignoringisactive:
-                    if block["opcode"] not in ignoreblock_list:
-                        if block["topLevel"]:
-                            if tmp_blocks:
-                                scripts_dict[sprite].append(tmp_blocks)
-                            self.toplevel_list.append(block_id)
-                            self.parentnull_list[sprite].append(block_id)
-                            tmp_blocks = [block["opcode"]]
-                        else:
-                            tmp_blocks.append(block["opcode"])
-                    else:
-                        print("IGNORO BLOQUE")
-                else:
+                if self.ignoringisactive and block["opcode"] not in ignoreblock_list:
                     if block["topLevel"]:
                         if tmp_blocks:
                             scripts_dict[sprite].append(tmp_blocks)
                         tmp_blocks = [block["opcode"]]
                     else:
                         tmp_blocks.append(block["opcode"])
+                elif self.ignoringisactive:
+                    print("IGNORO BLOQUE")
+                else:
+                    if block["topLevel"]:
+                        if tmp_blocks:
+                            scripts_dict[sprite].append(tmp_blocks)
+                        tmp_blocks = [block["opcode"]]
+                    else:
+#                        if block["opcode"] in LOOP_BLOCKS:
+#                            print("hay un loop o condicional")
+#                            loop_next = loop_blockid["inputs"]["SUBSTACK"][1] #LOS DE CONDICIONES TIENEN SUBSTACK2
+#                            self.loop_dict[sprite].append()
+#                        if block["opcode"] = loop_next:
+#                            order_loop.append()
+                        tmp_blocks.append(block["opcode"])
             scripts_dict[sprite].append(tmp_blocks)
 
-        #print(scripts_dict)
+        print(scripts_dict)
+        print(self.loop_dict)
 
         # Intra-sprite
         self.intra_dups_list = []
