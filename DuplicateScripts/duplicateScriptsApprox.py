@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Made by Felipe E. Sandoval Sibada
 
 from difflib import SequenceMatcher
 import json
@@ -179,12 +178,69 @@ class DuplicateScripts():
         return result
 
 
+def get_function_blocks(start, block_dict):
+    list_blocks = []
+    begin = block_dict[block_dict[start]["next"]]
+    while begin != None:
+        list_blocks.append(begin["opcode"])
+        if begin["next"] != None:
+            begin = block_dict[begin["next"]]
+        else:
+            begin = None
+    return list_blocks
+
+def customb(filename):
+    json_project = json.loads(open(filename).read())
+    list_customblocks_sprite = []
+    list_calls = []
+    data = {}
+    count_definitions = 0
+    count_calls = 0
+    for e in json_project["targets"]:
+        for k in e:
+            if k == "blocks":
+                name = e["name"] #SPRITE NAME
+                data = {}
+                data[name] = [] # ATENCION A ESTE MODO DE INDEXAR LISTAS EN DICCIONARIOS
+                list_calls = []
+                is_stage = e["isStage"] # SIMPLEMENTE PARA SABER SI ES STAGE
+                for key in e[k]:
+                    print(e[k][key])
+                    if e[k][key]["opcode"] == "procedures_prototype":
+                        parent = e[k][key]["parent"]
+                        list_function_blocks = get_function_blocks(parent, e[k])
+                        print(e[k][key])
+                        data[name].append({"type": "procedures_prototype", "name": e[k][key]["mutation"]["proccode"],
+                                "argument_names":e[k][key]["mutation"]["argumentnames"],
+                                "argument_ids": e[k][key]["mutation"]["argumentids"],
+                                "blocks": list_function_blocks,
+                                "n_calls": 0})
+                        count_definitions += 1
+                    elif e[k][key]["opcode"] == "procedures_call":
+                        list_calls.append({"type": "procedures_call", "name": e[k][key]["mutation"]["proccode"],
+                                            "argument_ids":e[k][key]["mutation"]["argumentids"]})
+                        count_calls += 1
+                for call in list_calls:
+                    for procedure in data[name]:
+                        print("Comprueba")
+                        print(procedure["name"], procedure["type"], " ||| ", call)
+                        if procedure["name"] == call["name"] and procedure["type"] == "procedures_prototype":
+                            print("encuentra llamada")
+                            procedure["n_calls"] = procedure["n_calls"] + 1
+                data[name] += list_calls
+                list_customblocks_sprite.append(data)
+    data = {"name": filename.split(".")[0], "custom_blocks": list_customblocks_sprite, "n_custom_blocks": count_definitions,
+            "n_custom_blocks_calls": count_calls}
+
+    print(filename, ": Number of custom blocks", count_definitions, count_calls)
+
 def main(filename, ignoring):
     """The entrypoint for the 'duplicateScripts' extension"""
     duplicate = DuplicateScripts(ignoring)
     print("Looking for duplicate scripts in", filename)
     print()
     duplicate.analyze(filename)
+    customb(filename)
     print("Minimum number of blocks:", N_BLOCKS)
     print(duplicate.finalize(filename))
 
