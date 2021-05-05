@@ -192,7 +192,7 @@ def get_function_blocks(start, block_dict):
 
 def loopb(filename):
     json_project = json.loads(open(filename).read())
-    custom_list = []
+    loop_list = []
     for e in json_project["targets"]:
         for k in e:
             if k == "blocks":
@@ -205,13 +205,18 @@ def loopb(filename):
                         #print(e[k][key]["inputs"]["SUBSTACK"][1])
                         #print("hasta aqui")
                         list_function_blocks = get_function_blocks(parent, e[k])
-                        print(list_function_blocks)
+                        #print(list_function_blocks)
                         #print(e[k][key])
                         list_custom.append(e[k][key]["opcode"])
                         list_custom.append(e[k][parent]["opcode"])
                         list_custom.extend(list_function_blocks)
-                        custom_list.append(list_custom)
-    print(custom_list)
+                        if e[k][key]["opcode"] == "control_if_else":
+                            parent = e[k][key]["inputs"]["SUBSTACK2"][1]
+                            list_function_blocks = get_function_blocks(parent, e[k])
+                            list_custom.append(e[k][parent]["opcode"])
+                            list_custom.extend(list_function_blocks)
+                        loop_list.append(list_custom)
+    print(loop_list)
 
 def customb(filename):
     json_project = json.loads(open(filename).read())
