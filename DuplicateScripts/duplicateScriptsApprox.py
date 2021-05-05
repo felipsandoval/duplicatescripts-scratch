@@ -182,7 +182,6 @@ def get_function_blocks(start, block_dict):
     list_blocks = []
     begin = block_dict[block_dict[start]["next"]]
     while begin != None:
-        #print(begin)
         list_blocks.append(begin["opcode"])
         if begin["next"] != None:
             begin = block_dict[begin["next"]]
@@ -193,32 +192,23 @@ def get_function_blocks(start, block_dict):
 
 def loopb(filename):
     json_project = json.loads(open(filename).read())
-    list_customblocks_sprite = []
-    list_calls = []
-    data = {}
     custom_list = []
     for e in json_project["targets"]:
         for k in e:
             if k == "blocks":
                 name = e["name"] #SPRITE NAME
-                data = {}
-                data[name] = [] # ATENCION A ESTE MODO DE INDEXAR LISTAS EN DICCIONARIOS
-                list_calls = []
-                is_stage = e["isStage"] # SIMPLEMENTE PARA SABER SI ES STAGE
                 list_custom = []
                 for key in e[k]:
                     #print(e[k][key])
                     if e[k][key]["opcode"] in LOOP_BLOCKS:
                         parent = e[k][key]["inputs"]["SUBSTACK"][1]
-                        #print(e[k][key]["opcode"])
                         #print(e[k][key]["inputs"]["SUBSTACK"][1])
                         #print("hasta aqui")
                         list_function_blocks = get_function_blocks(parent, e[k])
                         print(list_function_blocks)
                         #print(e[k][key])
                         list_custom.append(e[k][key]["opcode"])
-                        data[name].append({"type": e[k][key]["opcode"], "iterations": e[k][key]["inputs"]["TIMES"][1][1],
-                                "blocks_in_loop":list_function_blocks})
+                        list_custom.append(e[k][parent]["opcode"])
                         list_custom.extend(list_function_blocks)
                         custom_list.append(list_custom)
     print(custom_list)
