@@ -257,6 +257,7 @@ def get_function_blocks_id(start, block_dict):
 
 def getloop_ids(block_value, blocks_dict):
     list_loop = []
+    #FALTA EL CASO QUE SEA LOOP_FOREVER Y DEMÁS
     parent = block_value["parent"]
     start = block_value["inputs"]["SUBSTACK"][1]
     list_function_blocks_id = get_function_blocks_id(start, blocks_dict)
