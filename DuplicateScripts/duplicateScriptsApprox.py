@@ -87,39 +87,39 @@ class DuplicateScripts():
         """Start parsering it"""
         json_project = obtaining_json(filename)
         scripts_dict = {}
+        script_dict_test = {}
         ignoreblock_list = blocks2ignore()
+        loops_dict = {}
 
         # Loops through all sprites (and canva "sprite" too)
         for sprites_dict in json_project["targets"]:
             sprite = sprites_dict["name"]
-            blocks_dict = {}
+            self.blocks_dict = {}
             scripts_dict[sprite] = []
+            script_dict_test[sprite] = []
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
-                    blocks_dict[blocks] = blocks_value
+                    self.blocks_dict[blocks] = blocks_value
 
 
             opcode_dict = {}   # block id -> block opcode
             tmp_blocks = []
-            order_loop = []
-            tmp_blocks2 = []
             opcode_list_ord = []
             loop_list = []
-            loop_list2 = []
-            loops_dict = {}
-            loops_dict2 = {}
+            tmp_blocks_loop = []
+            topLevel_list = []
+            existloop = False
 
-
-            for block_id, block in blocks_dict.items():
+            for block_id, block in self.blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
                 if block["opcode"] in LOOP_BLOCKS:
-                    #loop_list = getloopb(block, blocks_dict)
-                    #loops_dict[block["parent"]] = loop_list
-                    loop_list2 = getloop_ids(block, blocks_dict)
-                    loops_dict2[block["parent"]] = loop_list2
+                    existloop = True
+                    loop_list = getloop_ids(block, self.blocks_dict)
+                    loop_list.append("END_LOOP")
+                    loops_dict[block["parent"]] = loop_list
                     #print(loops_dict)
-                    #print(loops_dict2)
+                    # ESTO FUNCIONA
                 if self.ignoringisactive and block["opcode"] not in ignoreblock_list:
                     if block["topLevel"]:
                         if tmp_blocks:
@@ -131,34 +131,66 @@ class DuplicateScripts():
                     print("IGNORO BLOQUE")
                 else:
                     if block["topLevel"]:
-                        if tmp_blocks:
+                        #print("entro") 
+                        testing = self.search_next([], block_id)
+                        #print(testing)
+                        #print(loops_dict)
+                        script_dict_test[sprite].append(testing)
+                        if tmp_blocks: 
                             scripts_dict[sprite].append(tmp_blocks)
                         tmp_blocks = [block["opcode"]]
                         opcode_list_ord = [block_id]
+                        topLevel_list.append(block_id)
                     else:
                         tmp_blocks.append(block["opcode"])
                         opcode_list_ord.append(block_id)
-            opcode_list_ord2 = opcode_list_ord
-           # for block_id in loops_dict:
-           #     parent = block_id
-           #     opcode_list_ord.insert(opcode_list_ord.index(parent)+1, loop_list)
-            for block_id in loops_dict2:
-                parent = block_id
-                #SLICE INDEXING IN LIST
-                print(opcode_list_ord2)
-                opcode_list_ord2[opcode_list_ord2.index(parent)+1:1] = loop_list2
-                tmp_block3 = []
-                for i in opcode_list_ord2:
-                    tmp_block3.append(opcode_dict[i])
-                print(tmp_block3)    
-                #opcode_list_ord2.insert(opcode_list_ord2.index(parent)+1, loop_list2)
-            #opcode_list_ord.insert(opcode_list_ord.index(before_blockid)+1, loop_list)
             scripts_dict[sprite].append(tmp_blocks)
-            #print(opcode_list_ord)
-            #print(opcode_dict)
-            print(opcode_list_ord2)
-            #print(tmp_blocks2)
+            #print(scripts_dict)
+            # UNA VEZ TENGO TODOS LOS BLOCKS DE UN SPRITE
+            if existloop:
+                existloop = False
+                for block_id in loops_dict:
+                    parent = block_id
+                    print(parent)
+                    print(loops_dict[parent])
+                    #print(script_dict_test[sprite])
+                    for i in script_dict_test[sprite]:
+                        try:
+                            #SLICE INDEXING IN LIST
+                        #    print(""loop_list"")
+                            if parent in i:
+                                i[i.index(parent)+1:1] = loops_dict[parent]
+                            #for i in testing:
+                            #    if i == "END_LOOP":
+                            #        tmp_blocks_loop.append("END_LOOP")
+                            #    else:
+                            #        tmp_blocks_loop.append(opcode_dict[i])
+                            #print(tmp_blocks_loop)
+                            #print("wtf")
+                            #script_dict_test[sprite].append(tmp_blocks_loop)
+                        except:
+                            print("un objeto vacío")
+                #print(scripts_dict)
+        #print(scripts_dict_blockid)
+        print(script_dict_test)
+        #print (loops_dict)
 
+
+        #opcode_list_ord2 = opcode_list_ord
+            #print(opcode_list_ord2)
+        #    for block_id in loops_dict:
+        #        parent = block_id
+                #SLICE INDEXING IN LIST
+        #        try:
+        #            opcode_list_ord2[opcode_list_ord2.index(parent)+1:1] = loop_list
+        #            for i in opcode_list_ord2:
+        #                if i == "END_LOOP":
+        #                    tmp_blocks_loop.append("END_LOOP")
+        #                else:
+        #                    tmp_blocks_loop.append(opcode_dict[i])
+        #        except:
+        #            pass
+        
         # Intra-sprite
         self.intra_dups_list = []
         for sprite in scripts_dict:
@@ -175,6 +207,18 @@ class DuplicateScripts():
             blocks += scripts_dict[sprite]
         self.project_dups_list = find_dups(blocks)
 
+    def search_next(self, block_list, block_id):
+
+        block = self.blocks_dict[block_id]
+        block_list.append(block_id)
+        next_block = block["next"]
+        if block["next"] == None:
+            return block_list
+        else:
+            block_id = next_block
+            block_list = self.search_next(block_list, block_id)
+        return block_list
+
     def finalize(self, filename):
         """Output the duplicate scripts detected."""
         with open(filename.replace('.json', '') + '-sprite.json',
@@ -190,7 +234,6 @@ class DuplicateScripts():
         result += ("%d project-wide duplicate scripts found\n" %
                    len(self.project_dups_list))
         return result
-
 
 def get_function_blocks(start, block_dict):
     list_blocks = []
@@ -219,16 +262,12 @@ def get_function_blocks_id(start, block_dict):
     return list_blocks_id
 
 def getloop_ids(block_value, blocks_dict):
-    loop_dict = {}
     list_loop = []
     parent = block_value["parent"]
     start = block_value["inputs"]["SUBSTACK"][1]
     list_function_blocks_id = get_function_blocks_id(start, blocks_dict)
     list_loop.append(blocks_dict[block_value["inputs"]["SUBSTACK"][1]]["parent"])
     list_loop.extend(list_function_blocks_id)
-    loop_dict[block_value["parent"]] = list_loop
-    #print(loop_dict)
-    #print(list_loop)
     return list_loop
 
 def getloopb(block_value, blocks_dict):
@@ -245,41 +284,6 @@ def getloopb(block_value, blocks_dict):
     #print(loop_dict)
     #print(list_loop)
     return list_loop
-
-def loopb(filename):
-    json_project = json.loads(open(filename).read())
-    loop_list = []
-    tmp_blocks = []
-
-    for e in json_project["targets"]:
-        sprite = e["name"]
-        print(sprite)
-        for k in e:
-            if k == "blocks":
-                list_custom = []
-                for key in e[k]:
-                    if e[k][key]["opcode"] in LOOP_BLOCKS:
-                        parent = e[k][key]["inputs"]["SUBSTACK"][1]
-                        list_function_blocks = get_function_blocks(parent, e[k])
-                        list_custom.append(e[k][key]["opcode"])
-                        list_custom.append(e[k][parent]["opcode"])
-                        list_custom.extend(list_function_blocks)
-                        list_custom.append("CONTROL_END")
-                        if e[k][key]["opcode"] == "control_if_else":
-                            parent = e[k][key]["inputs"]["SUBSTACK2"][1]
-                            list_function_blocks = get_function_blocks(parent, e[k])
-                            list_custom.append(e[k][parent]["opcode"])
-                            list_custom.extend(list_function_blocks)
-                        loop_list.append(list_custom)
-                    #else:
-                    #    if e[k][key]["topLevel"]:
-                    #        if tmp_blocks:
-                    #            scripts_dict[sprite].append(tmp_blocks)
-                    #    tmp_blocks = [e[k][key]["opcode"]]
-                    #    else:
-                    #        tmp_blocks.append(block["opcode"])
-                    
-    #print(loop_list)
 
 def customb(filename):
     json_project = json.loads(open(filename).read())
@@ -344,7 +348,7 @@ def main(filename, ignoring):
     print("Looking for duplicate scripts in", filename)
     print()
     duplicate.analyze(filename)
-    loopb(filename)
+    #loopb(filename)
     #customb(filename)
     print("Minimum number of blocks:", N_BLOCKS)
     print(duplicate.finalize(filename))
