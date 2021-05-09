@@ -6,6 +6,7 @@ import json
 import zipfile
 import sys
 import shutil
+from more_itertools import flatten
 
 N_BLOCKS = 6
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
@@ -56,25 +57,21 @@ def sb3_json_extraction(fileIn):
     os.remove(fileOut)
     return json_project
 
-def ordering_json(target): # FALTA POR COMPLETAR
-    sprite = target["name"]
-    blocks_dict = {}
-    scripts_dict[sprite] = []
-    # Gets all blocks out of sprite
-    for blocks, blocks_value in target["blocks"].items():
-        if isinstance(blocks_value, dict):
-            blocks_dict[blocks] = blocks_value
-    opcode_dict = {}   # block id -> opcode
-    tmp_blocks = []
-    order_loop = []
-    for block_id, block in blocks_dict.items():
-        if block["topLevel"]:
-            if tmp_blocks:
-                scripts_dict[sprite].append(tmp_blocks)
-            tmp_blocks = [block["opcode"]]
-        else:
-            tmp_blocks.append(block["opcode"])
-    scripts_dict[sprite].append(tmp_blocks)
+def obtaining_json(filename):
+    """Obtains JSON"""
+    try:
+        if filename.endswith(".zip"):
+            zip_file = zipfile.ZipFile(filename, "r")
+            # Aquí hay que hacer el caso en el que sean VARIOS archivos JSON.
+            json_file = json.loads(zip_file.open("project.json").read())
+        elif filename.endswith(".json"):
+            json_file = json.loads(open(filename).read())
+        elif filename.endswith(".sb3"):
+            json_file = sb3_json_extraction(filename)
+    except:
+        sys.exit("\nPlease, use a valid extension file like .SB3," +
+        " JSON or .ZIP\n")
+    return json_file
 
 class DuplicateScripts():
     """
@@ -85,39 +82,44 @@ class DuplicateScripts():
     def __init__(self, ignoring):
         self.ignoringisactive = ignoring
         self.toplevel_list = []
-        self.loop_dict = {}
-    def analyze(self, filename):
-        """Obtains JSON and start parsering it"""
-        try:
-            if filename.endswith(".zip"):
-                zip_file = zipfile.ZipFile(filename, "r")
-                # Aquí hay que hacer el caso en el que sean VARIOS archivos JSON.
-                json_project = json.loads(zip_file.open("project.json").read())
-            elif filename.endswith(".json"):
-                json_project = json.loads(open(filename).read())
-            elif filename.endswith(".sb3"):
-                json_project = sb3_json_extraction(filename)
-        except:
-                sys.exit("\nPlease, use a valid extension file like .SB3," +
-                " JSON or .ZIP\n")
 
+    def analyze(self, filename):
+        """Start parsering it"""
+        json_project = obtaining_json(filename)
         scripts_dict = {}
         ignoreblock_list = blocks2ignore()
+
         # Loops through all sprites (and canva "sprite" too)
         for sprites_dict in json_project["targets"]:
             sprite = sprites_dict["name"]
             blocks_dict = {}
             scripts_dict[sprite] = []
-            self.loop_dict[sprite] = []
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
                     blocks_dict[blocks] = blocks_value
-            opcode_dict = {}   # block id -> opcode
+
+
+            opcode_dict = {}   # block id -> block opcode
             tmp_blocks = []
             order_loop = []
+            tmp_blocks2 = []
+            opcode_list_ord = []
+            loop_list = []
+            loop_list2 = []
+            loops_dict = {}
+            loops_dict2 = {}
+
+
             for block_id, block in blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
+                if block["opcode"] in LOOP_BLOCKS:
+                    #loop_list = getloopb(block, blocks_dict)
+                    #loops_dict[block["parent"]] = loop_list
+                    loop_list2 = getloop_ids(block, blocks_dict)
+                    loops_dict2[block["parent"]] = loop_list2
+                    #print(loops_dict)
+                    #print(loops_dict2)
                 if self.ignoringisactive and block["opcode"] not in ignoreblock_list:
                     if block["topLevel"]:
                         if tmp_blocks:
@@ -132,18 +134,30 @@ class DuplicateScripts():
                         if tmp_blocks:
                             scripts_dict[sprite].append(tmp_blocks)
                         tmp_blocks = [block["opcode"]]
+                        opcode_list_ord = [block_id]
                     else:
-#                        if block["opcode"] in LOOP_BLOCKS:
-#                            print("hay un loop o condicional")
-#                            loop_next = loop_blockid["inputs"]["SUBSTACK"][1] #LOS DE CONDICIONES TIENEN SUBSTACK2
-#                            self.loop_dict[sprite].append()
-#                        if block["opcode"] = loop_next:
-#                            order_loop.append()
                         tmp_blocks.append(block["opcode"])
+                        opcode_list_ord.append(block_id)
+            opcode_list_ord2 = opcode_list_ord
+           # for block_id in loops_dict:
+           #     parent = block_id
+           #     opcode_list_ord.insert(opcode_list_ord.index(parent)+1, loop_list)
+            for block_id in loops_dict2:
+                parent = block_id
+                #SLICE INDEXING IN LIST
+                print(opcode_list_ord2)
+                opcode_list_ord2[opcode_list_ord2.index(parent)+1:1] = loop_list2
+                tmp_block3 = []
+                for i in opcode_list_ord2:
+                    tmp_block3.append(opcode_dict[i])
+                print(tmp_block3)    
+                #opcode_list_ord2.insert(opcode_list_ord2.index(parent)+1, loop_list2)
+            #opcode_list_ord.insert(opcode_list_ord.index(before_blockid)+1, loop_list)
             scripts_dict[sprite].append(tmp_blocks)
-
-        #print(scripts_dict)
-        #print(self.loop_dict)
+            #print(opcode_list_ord)
+            #print(opcode_dict)
+            print(opcode_list_ord2)
+            #print(tmp_blocks2)
 
         # Intra-sprite
         self.intra_dups_list = []
@@ -185,38 +199,87 @@ def get_function_blocks(start, block_dict):
         list_blocks.append(begin["opcode"])
         if begin["next"] != None:
             begin = block_dict[begin["next"]]
-            #print(begin)
         else:
             begin = None
     return list_blocks
 
+def get_function_blocks_id(start, block_dict):
+    """Get the block_ids inside loops"""
+    list_blocks_id = []
+    next_block_id = block_dict[start]["next"]
+    next_block = block_dict[next_block_id]
+    list_blocks_id.append(start)
+    while next_block != None:
+        list_blocks_id.append(next_block_id)
+        if block_dict[next_block_id]["next"] != None:
+            next_block_id = block_dict[next_block_id]["next"]
+            next_block = block_dict[next_block_id]
+        else:
+            next_block = None
+    return list_blocks_id
+
+def getloop_ids(block_value, blocks_dict):
+    loop_dict = {}
+    list_loop = []
+    parent = block_value["parent"]
+    start = block_value["inputs"]["SUBSTACK"][1]
+    list_function_blocks_id = get_function_blocks_id(start, blocks_dict)
+    list_loop.append(blocks_dict[block_value["inputs"]["SUBSTACK"][1]]["parent"])
+    list_loop.extend(list_function_blocks_id)
+    loop_dict[block_value["parent"]] = list_loop
+    #print(loop_dict)
+    #print(list_loop)
+    return list_loop
+
+def getloopb(block_value, blocks_dict):
+    loop_dict = {}
+    list_loop = []
+    parent = block_value["parent"]
+    start = block_value["inputs"]["SUBSTACK"][1]
+    list_function_blocks = get_function_blocks(start, blocks_dict)
+    list_loop.append(block_value["opcode"])
+    list_loop.append(blocks_dict[block_value["inputs"]["SUBSTACK"][1]]["opcode"])
+    list_loop.extend(list_function_blocks)
+    list_loop.append("CONTROL_END")
+    loop_dict[block_value["parent"]] = list_loop
+    #print(loop_dict)
+    #print(list_loop)
+    return list_loop
+
 def loopb(filename):
     json_project = json.loads(open(filename).read())
     loop_list = []
+    tmp_blocks = []
+
     for e in json_project["targets"]:
+        sprite = e["name"]
+        print(sprite)
         for k in e:
             if k == "blocks":
-                name = e["name"] #SPRITE NAME
                 list_custom = []
                 for key in e[k]:
-                    #print(e[k][key])
                     if e[k][key]["opcode"] in LOOP_BLOCKS:
                         parent = e[k][key]["inputs"]["SUBSTACK"][1]
-                        #print(e[k][key]["inputs"]["SUBSTACK"][1])
-                        #print("hasta aqui")
                         list_function_blocks = get_function_blocks(parent, e[k])
-                        #print(list_function_blocks)
-                        #print(e[k][key])
                         list_custom.append(e[k][key]["opcode"])
                         list_custom.append(e[k][parent]["opcode"])
                         list_custom.extend(list_function_blocks)
+                        list_custom.append("CONTROL_END")
                         if e[k][key]["opcode"] == "control_if_else":
                             parent = e[k][key]["inputs"]["SUBSTACK2"][1]
                             list_function_blocks = get_function_blocks(parent, e[k])
                             list_custom.append(e[k][parent]["opcode"])
                             list_custom.extend(list_function_blocks)
                         loop_list.append(list_custom)
-    print(loop_list)
+                    #else:
+                    #    if e[k][key]["topLevel"]:
+                    #        if tmp_blocks:
+                    #            scripts_dict[sprite].append(tmp_blocks)
+                    #    tmp_blocks = [e[k][key]["opcode"]]
+                    #    else:
+                    #        tmp_blocks.append(block["opcode"])
+                    
+    #print(loop_list)
 
 def customb(filename):
     json_project = json.loads(open(filename).read())
