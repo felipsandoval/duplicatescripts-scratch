@@ -105,7 +105,6 @@ class DuplicateScripts():
 
             opcode_dict = {}   # block id -> block opcode
             tmp_blocks = []
-            opcode_list_ord = []
             loop_list = []
             tmp_blocks_loop = []
             topLevel_list = []
@@ -131,19 +130,14 @@ class DuplicateScripts():
                     print("IGNORO BLOQUE")
                 else:
                     if block["topLevel"]:
-                        #print("entro") 
                         testing = self.search_next([], block_id)
-                        #print(testing)
-                        #print(loops_dict)
                         script_dict_test[sprite].append(testing)
                         if tmp_blocks: 
                             scripts_dict[sprite].append(tmp_blocks)
                         tmp_blocks = [block["opcode"]]
-                        opcode_list_ord = [block_id]
                         topLevel_list.append(block_id)
                     else:
                         tmp_blocks.append(block["opcode"])
-                        opcode_list_ord.append(block_id)
             scripts_dict[sprite].append(tmp_blocks)
             #print(scripts_dict)
             # UNA VEZ TENGO TODOS LOS BLOCKS DE UN SPRITE
@@ -151,45 +145,45 @@ class DuplicateScripts():
                 existloop = False
                 for block_id in loops_dict:
                     parent = block_id
-                    print(parent)
-                    print(loops_dict[parent])
+                    #print(parent)
+                    #print(loops_dict[parent])
                     #print(script_dict_test[sprite])
                     for i in script_dict_test[sprite]:
                         try:
                             #SLICE INDEXING IN LIST
-                        #    print(""loop_list"")
                             if parent in i:
+                                #print(loops_dict[parent])
                                 i[i.index(parent)+1:1] = loops_dict[parent]
-                            #for i in testing:
-                            #    if i == "END_LOOP":
-                            #        tmp_blocks_loop.append("END_LOOP")
-                            #    else:
-                            #        tmp_blocks_loop.append(opcode_dict[i])
                             #print(tmp_blocks_loop)
                             #print("wtf")
                             #script_dict_test[sprite].append(tmp_blocks_loop)
                         except:
                             print("un objeto vacío")
                 #print(scripts_dict)
+            
+            #for i in script_dict_test[sprite]:
+            #    for j in i:
+            #        if  == "END_LOOP":
+                            #        tmp_blocks_loop.append("END_LOOP")
+                            #    else:
+                            #        tmp_blocks_loop.append(opcode_dict[i])
+            #try:
+                #SLICE INDEXING IN LIST
+                #if parent in i:
+                #    i[i.index(parent)+1:1] = loops_dict[parent]
+                #for i in testing:
+                #    if i == "END_LOOP":
+                #        tmp_blocks_loop.append("END_LOOP")
+                #    else:
+                #        tmp_blocks_loop.append(opcode_dict[i])
+                #print(tmp_blocks_loop)
+                #print("wtf")
+                #script_dict_test[sprite].append(tmp_blocks_loop)
+            #except:
+            #    print("un objeto vacío")
         #print(scripts_dict_blockid)
         print(script_dict_test)
         #print (loops_dict)
-
-
-        #opcode_list_ord2 = opcode_list_ord
-            #print(opcode_list_ord2)
-        #    for block_id in loops_dict:
-        #        parent = block_id
-                #SLICE INDEXING IN LIST
-        #        try:
-        #            opcode_list_ord2[opcode_list_ord2.index(parent)+1:1] = loop_list
-        #            for i in opcode_list_ord2:
-        #                if i == "END_LOOP":
-        #                    tmp_blocks_loop.append("END_LOOP")
-        #                else:
-        #                    tmp_blocks_loop.append(opcode_dict[i])
-        #        except:
-        #            pass
         
         # Intra-sprite
         self.intra_dups_list = []
