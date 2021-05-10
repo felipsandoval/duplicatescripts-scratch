@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Made by Felipe E. Sandoval Sibada
 
-import duplicateScriptsApprox
+import duplicateScripts
 import statistics
 import cluster
 import most_frequent_blocks
@@ -17,7 +17,7 @@ from datetime import datetime
 #mypath = sys.argv[1]
 #_, _, filenames = next(walk(mypath))
 #for filename in filenames:
-#    duplicateScriptsApprox.main(mypath + filename)
+#    duplicateScripts.main(mypath + filename)
     #statistics.main(filename + "-intra.json")
     #statistics.main(filename + "-project.json")
 #    cluster.main(mypath + filename.replace(".json", "") + "-project.json")
@@ -25,7 +25,7 @@ from datetime import datetime
 def main(filename, ignoring):
     """MAIN PROGRAM"""
     print("\n-- STARTING ANALYSIS --\n")
-    duplicateScriptsApprox.main(filename, ignoring)
+    duplicateScripts.main(filename, ignoring)
     most_frequent_blocks.main(filename)
     spritefile = filename.replace('.json', '') + '-sprite.json'
     projectfile = filename.replace('.json', '') + '-project.json'
