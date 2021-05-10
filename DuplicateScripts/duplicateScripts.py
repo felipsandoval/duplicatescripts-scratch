@@ -67,6 +67,8 @@ def obtaining_json(filename):
             json_file = json.loads(open(filename).read())
         elif filename.endswith(".sb3"):
             json_file = sb3_json_extraction(filename)
+    except FileNotFoundError:
+        sys.exit("\nPlease, use a file that exists in directory\n")
     except:
         sys.exit("\nPlease, use a valid extension file like .SB3," +
         " JSON or .ZIP\n")
@@ -117,7 +119,7 @@ class DuplicateScripts():
                     if block["parent"] != None:
                         loops_dict[block["parent"]] = loop_list
                     else:
-                        loops_dict[block_id] = loop_list
+                        loops_dict["loopistop"] = loop_list
                     #print(loops_dict)
                     # ESTO FUNCIONA
                 if self.ignoringisactive and block["opcode"] not in ignoreblock_list:
@@ -140,57 +142,29 @@ class DuplicateScripts():
                     else:
                         tmp_blocks.append(block["opcode"])
             scripts_dict[sprite].append(tmp_blocks)
-            # UNA VEZ TENGO TODOS LOS BLOCKS DE UN SPRITE
+
             if existloop:
                 existloop = False
                 for block_id in loops_dict:
                     parent = block_id
-                    #print(parent)
-                    #print(loops_dict[parent])
-                    #print(script_dict_test[sprite])
                     for i in script_dict_test[sprite]:
                         try:
-                            #SLICE INDEXING IN LIST
-                            if parent in i:
-                                #if parent != i[0]:
+                            if parent in i: #SLICE INDEXING IN LIST
+                                del i[i.index(parent)+1] # PARA BORRAR EL LOOP QUE SE DUPLICA
                                 i[i.index(parent)+1:1] = loops_dict[parent]
-                                #print(i.index("END_LOOP")+1)
-                                del i[i.index("END_LOOP")+1] # PARA BORRAR EL QUE SE DUPLICA
-                                #else: #EN CASO QUE EL LOOP SEA EL TOPLEVEL
-                                #    print("entro en la que quiero")
-                                #    i[i.index(parent):1] = loops_dict[parent]
-                                #    del i[i.index("END_LOOP")+1] # PARA BORRAR EL QUE SE DUPLICA
+                            elif parent == "loopistop":
+                                i[0:1] = loops_dict[parent] # Index distinto para los loops que son top level
                         except:
                             print("un objeto vacío")
                             pass
-                #print(scripts_dict)
+    
             #CAMBIANDO VALOR DE BLOCK_ID POR OPCODE. FUNCIONA CON CONTROL_REPEAT
             for block in script_dict_test[sprite]:
                 for j in range(len(block)):
                     #print(block[j])
-                    if block[j] != "END_LOOP":
+                    if block[j] != "END_LOOP" and block[j] != "END_CONDITION" and block[j] != "END_LOOP_CONDITIONAL":
                         opcode = opcode_dict[block[j]]
                         block[j] = opcode
-
-            #        if  == "END_LOOP":
-                            #        tmp_blocks_loop.append("END_LOOP")
-                            #    else:
-                            #        tmp_blocks_loop.append(opcode_dict[i])
-            #try:
-                #SLICE INDEXING IN LIST
-                #if parent in i:
-                #    i[i.index(parent)+1:1] = loops_dict[parent]
-                #for i in testing:
-                #    if i == "END_LOOP":
-                #        tmp_blocks_loop.append("END_LOOP")
-                #    else:
-                #        tmp_blocks_loop.append(opcode_dict[i])
-                #print(tmp_blocks_loop)
-                #print("wtf")
-                #script_dict_test[sprite].append(tmp_blocks_loop)
-            #except:
-            #    print("un objeto vacío")
-        #print(loops_dict)
         print(script_dict_test)
 
         scripts_dict = script_dict_test
@@ -238,17 +212,6 @@ class DuplicateScripts():
                    len(self.project_dups_list))
         return result
 
-def get_function_blocks(start, block_dict):
-    list_blocks = []
-    begin = block_dict[block_dict[start]["next"]]
-    while begin != None:
-        list_blocks.append(begin["opcode"])
-        if begin["next"] != None:
-            begin = block_dict[begin["next"]]
-        else:
-            begin = None
-    return list_blocks
-
 def get_function_blocks_id(start, block_dict):
     """Get the block_ids inside loops"""
     list_blocks_id = []
@@ -269,22 +232,24 @@ def get_function_blocks_id(start, block_dict):
 
 def getloop_ids(block_value, blocks_dict):
     list_loop = []
-    #FALTA EL CASO QUE SEA Y DEMÁS
-    parent = block_value["parent"]
     start = block_value["inputs"]["SUBSTACK"][1]
     list_function_blocks_id = get_function_blocks_id(start, blocks_dict)
     list_loop.append(blocks_dict[block_value["inputs"]["SUBSTACK"][1]]["parent"])
     list_loop.extend(list_function_blocks_id)
     if block_value["opcode"] in CONDITIONALS:
-        #list_loop.append("END_IF??")# deberia ser fin condicional
-        #list_loop.append("END_IF_ELSE??")# deberia ser fin condicional
+        list_loop.append("END_LOOP")
         start = block_value["inputs"]["CONDITION"][1]
         testing_cond = get_function_blocks_id(start, blocks_dict)
         if block_value["opcode"] == "control_if_else":
-            print(block_value["opcode"])
-            print("CASO DEL IF ELSE")
-        list_loop.extend(testing_cond)
-        list_loop.append("END_LOOP")# deberia ser fin condicional
+            list_loop.extend(testing_cond)
+            list_loop.append("END_CONDITION")
+            start = block_value["inputs"]["SUBSTACK2"][1]
+            list_loop_conditional = get_function_blocks_id(start, blocks_dict)
+            list_loop.extend(list_loop_conditional)
+            list_loop.append("END_LOOP_CONDITIONAL")
+        else:
+            list_loop.extend(testing_cond)
+            list_loop.append("END_CONDITION")
     else:
         list_loop.append("END_LOOP")
     return list_loop
@@ -303,6 +268,17 @@ def getloopb(block_value, blocks_dict):
     #print(loop_dict)
     #print(list_loop)
     return list_loop
+
+def get_function_blocks(start, block_dict):
+    list_blocks = []
+    begin = block_dict[block_dict[start]["next"]]
+    while begin != None:
+        list_blocks.append(begin["opcode"])
+        if begin["next"] != None:
+            begin = block_dict[begin["next"]]
+        else:
+            begin = None
+    return list_blocks
 
 def customb(filename):
     json_project = json.loads(open(filename).read())
@@ -386,5 +362,7 @@ if __name__ == "__main__":
         sys.exit("\nUsage: python3 duplicateScriptsApprox.py" +
                  " <file(.SB3 or .JSON or .ZIP)> [-i]\n" +
                  "\n-i (OPTIONAL): Ignore blocks from IgnoreBlocks.txt\n")
+    except FileNotFoundError:
+        sys.exit("\nPlease, use a file that exists in directory\n")
     except:
         sys.exit("\nSomething unexpected happened: ", sys.exc_info()[0])
