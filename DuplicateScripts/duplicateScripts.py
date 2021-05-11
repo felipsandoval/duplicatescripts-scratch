@@ -264,20 +264,6 @@ def getloop_ids(block_value, blocks_dict, block_id):
         list_loop.append("END_LOOP")
     return list_loop
 
-def getloopb(block_value, blocks_dict):
-    loop_dict = {}
-    list_loop = []
-    parent = block_value["parent"]
-    start = block_value["inputs"]["SUBSTACK"][1]
-    list_function_blocks = get_function_blocks(start, blocks_dict)
-    list_loop.append(block_value["opcode"])
-    list_loop.append(blocks_dict[block_value["inputs"]["SUBSTACK"][1]]["opcode"])
-    list_loop.extend(list_function_blocks)
-    list_loop.append("CONTROL_END")
-    loop_dict[block_value["parent"]] = list_loop
-    #print(loop_dict)
-    #print(list_loop)
-    return list_loop
 
 def get_function_blocks(start, block_dict):
     list_blocks = []
@@ -353,7 +339,6 @@ def main(filename, ignoring):
     print("Looking for duplicate scripts in", filename)
     print()
     duplicate.analyze(filename)
-    #loopb(filename)
     #customb(filename)
     print("Minimum number of blocks:", N_BLOCKS)
     print(duplicate.finalize(filename))
