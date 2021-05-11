@@ -92,6 +92,7 @@ class DuplicateScripts():
         script_dict_test = {}
         ignoreblock_list = blocks2ignore()
         loops_dict = {}
+        custom_dict = {}
 
         # Loops through all sprites (and canva "sprite" too)
         for sprites_dict in json_project["targets"]:
@@ -123,6 +124,9 @@ class DuplicateScripts():
                         loops_dict["loopistop"] = loop_list
                     #print(loops_dict)
                     # ESTO FUNCIONA
+                if block["opcode"] == "procedures_prototype":
+                    print("tengo un bloque personalizado hacer proceso de apéndice de info")
+                    getcustominfo(block)
                 if self.ignoringisactive and block["opcode"] not in ignoreblock_list:
                     if block["topLevel"]:
                         if tmp_blocks:
@@ -166,7 +170,7 @@ class DuplicateScripts():
                     if block[j] != "END_LOOP" and block[j] != "END_CONDITION" and block[j] != "END_LOOP_CONDITIONAL":
                         opcode = opcode_dict[block[j]]
                         block[j] = opcode
-        #print(script_dict_test)
+        print(script_dict_test)
 
         scripts_dict = script_dict_test
         # Intra-sprite
@@ -231,6 +235,9 @@ def get_function_blocks_id(start, block_dict):
         else:
             next_block = None
     return list_blocks_id
+
+def getcustominfo(blocks):
+    print("terminar esto")
 
 def getloop_ids(block_value, blocks_dict, block_id):
     list_loop = []
@@ -300,7 +307,7 @@ def customb(filename):
                         list_function_blocks = get_function_blocks(parent, e[k])
                         #print(e[k][key])
                         list_custom.append(e[k][key]["opcode"])
-                        list_custom.append(e[k][key]["mutation"]["proccode"])
+                        #list_custom.append(e[k][key]["mutation"]["proccode"])
                         data[name].append({"type": "procedures_prototype", "name": e[k][key]["mutation"]["proccode"],
                                 "argument_names":e[k][key]["mutation"]["argumentnames"],
                                 "argument_ids": e[k][key]["mutation"]["argumentids"],
