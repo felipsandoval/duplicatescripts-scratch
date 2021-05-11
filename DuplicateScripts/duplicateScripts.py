@@ -6,6 +6,7 @@ import json
 import zipfile
 import sys
 import shutil
+import os
 
 N_BLOCKS = 6
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
@@ -115,7 +116,7 @@ class DuplicateScripts():
                 opcode_dict[block_id] = block["opcode"]
                 if block["opcode"] in LOOP_BLOCKS:
                     existloop = True
-                    loop_list = getloop_ids(block, self.blocks_dict)
+                    loop_list = getloop_ids(block, self.blocks_dict, block_id)
                     if block["parent"] != None:
                         loops_dict[block["parent"]] = loop_list
                     else:
@@ -165,7 +166,7 @@ class DuplicateScripts():
                     if block[j] != "END_LOOP" and block[j] != "END_CONDITION" and block[j] != "END_LOOP_CONDITIONAL":
                         opcode = opcode_dict[block[j]]
                         block[j] = opcode
-        print(script_dict_test)
+        #print(script_dict_test)
 
         scripts_dict = script_dict_test
         # Intra-sprite
@@ -217,6 +218,7 @@ def get_function_blocks_id(start, block_dict):
     list_blocks_id = []
     list_blocks_id.append(start)
     next_block_id = block_dict[start]["next"]
+    #N0 LE PUEDO PASAR UN START QUE ESTE NULO O SEA
     if next_block_id == None:
         next_block = None
     else:
@@ -230,11 +232,19 @@ def get_function_blocks_id(start, block_dict):
             next_block = None
     return list_blocks_id
 
-def getloop_ids(block_value, blocks_dict):
+def getloop_ids(block_value, blocks_dict, block_id):
     list_loop = []
-    start = block_value["inputs"]["SUBSTACK"][1]
-    list_function_blocks_id = get_function_blocks_id(start, blocks_dict)
-    list_loop.append(blocks_dict[block_value["inputs"]["SUBSTACK"][1]]["parent"])
+    try:
+        start = block_value["inputs"]["SUBSTACK"][1]
+        if start == None:
+            list_loop.append(block_id)
+            return list_loop
+        list_function_blocks_id = get_function_blocks_id(start, blocks_dict)
+    except:
+        list_loop.append(block_id)
+        return list_loop
+    #list_loop.append(blocks_dict[block_value["inputs"]["SUBSTACK"][1]]["parent"])
+    list_loop.append(block_id) # es lo mismo que arriba, menos enrevesado
     list_loop.extend(list_function_blocks_id)
     if block_value["opcode"] in CONDITIONALS:
         list_loop.append("END_LOOP")
