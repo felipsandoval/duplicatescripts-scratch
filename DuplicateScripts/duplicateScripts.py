@@ -54,7 +54,7 @@ def sb3_json_extraction(fileIn):
         if fileName.endswith('.json'):
             json_file = zip_file.extract(fileName)
     json_project = json.loads(open(json_file).read())
-    os.remove(fileOut)
+    #os.remove(fileOut)
     return json_project
 
 def obtaining_json(filename):
@@ -99,6 +99,7 @@ class DuplicateScripts():
             sprite = sprites_dict["name"]
             self.blocks_dict = {}
             scripts_dict[sprite] = []
+            custom_dict[sprite] = []
             script_dict_test[sprite] = []
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
@@ -109,7 +110,6 @@ class DuplicateScripts():
             opcode_dict = {}   # block id -> block opcode
             tmp_blocks = []
             loop_list = []
-            tmp_blocks_loop = []
             topLevel_list = []
             existloop = False
 
@@ -125,8 +125,7 @@ class DuplicateScripts():
                     #print(loops_dict)
                     # ESTO FUNCIONA
                 if block["opcode"] == "procedures_prototype":
-                    print("tengo un bloque personalizado hacer proceso de apéndice de info")
-                    getcustominfo(block)
+                    getcustominfo(block, custom_dict, sprite, self.blocks_dict)
                 if self.ignoringisactive and block["opcode"] not in ignoreblock_list:
                     if block["topLevel"]:
                         if tmp_blocks:
@@ -170,7 +169,7 @@ class DuplicateScripts():
                     if block[j] != "END_LOOP" and block[j] != "END_CONDITION" and block[j] != "END_LOOP_CONDITIONAL":
                         opcode = opcode_dict[block[j]]
                         block[j] = opcode
-        print(script_dict_test)
+        #print(script_dict_test)
 
         scripts_dict = script_dict_test
         # Intra-sprite
@@ -236,8 +235,18 @@ def get_function_blocks_id(start, block_dict):
             next_block = None
     return list_blocks_id
 
-def getcustominfo(blocks):
-    print("terminar esto")
+def getcustominfo(block, custom_dict, sprite, block_dict):
+    print(block)
+    print(block["parent"])
+    #list_function_blocks = get_function_blocks(parent, e[k])
+    custom_dict[sprite].append({"type": "procedures_prototype", "name": block["mutation"]["proccode"],
+            "argument_names":block["mutation"]["argumentnames"],
+            "argument_ids": block["mutation"]["argumentids"],
+            "blocks": "falta",#list_function_blocks,
+            "n_calls": 0})
+    print("entro")
+    print(custom_dict)
+    print("salgo")
 
 def getloop_ids(block_value, blocks_dict, block_id):
     list_loop = []
@@ -287,15 +296,14 @@ def customb(filename):
     json_project = json.loads(open(filename).read())
     list_customblocks_sprite = []
     list_calls = []
-    data = {}
     count_definitions = 0
     count_calls = 0
     custom_list = []
+    data = {}
     for e in json_project["targets"]:
         for k in e:
             if k == "blocks":
                 name = e["name"] #SPRITE NAME
-                data = {}
                 data[name] = [] # ATENCION A ESTE MODO DE INDEXAR LISTAS EN DICCIONARIOS
                 list_calls = []
                 is_stage = e["isStage"] # SIMPLEMENTE PARA SABER SI ES STAGE
