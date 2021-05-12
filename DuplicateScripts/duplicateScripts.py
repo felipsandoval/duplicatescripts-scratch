@@ -84,6 +84,8 @@ class DuplicateScripts():
     def __init__(self, ignoring):
         self.ignoringisactive = ignoring
         self.toplevel_list = []
+        self.count_definitions = 0
+        self.count_calls = 0
 
     def analyze(self, filename):
         """Start parsering it"""
@@ -93,6 +95,8 @@ class DuplicateScripts():
         ignoreblock_list = blocks2ignore()
         loops_dict = {}
         custom_dict = {}
+        list_calls = []
+        list_customblocks_sprite = []
 
         # Loops through all sprites (and canva "sprite" too)
         for sprites_dict in json_project["targets"]:
@@ -124,8 +128,19 @@ class DuplicateScripts():
                         loops_dict["loopistop"] = loop_list
                     #print(loops_dict)
                     # ESTO FUNCIONA
-                if block["opcode"] == "procedures_prototype":
-                    getcustominfo(block, custom_dict, sprite, self.blocks_dict)
+                #if block["opcode"] == "procedures_prototype":
+                #    getcustominfo(block, custom_dict, sprite, self.blocks_dict)
+                #    self.count_definitions += 1
+                #elif block["opcode"] == "procedures_call":
+                #    list_calls.append({"type": "procedures_call", "name": block["mutation"]["proccode"],
+                #        "argument_ids":block["mutation"]["argumentids"]})
+                #    self.count_calls += 1
+                #    for call in list_calls:
+                #        for procedure in custom_dict[sprite]:
+                #            if procedure["name"] == call["name"] and procedure["type"] == "procedures_prototype":
+                #                procedure["n_calls"] = procedure["n_calls"] + 1
+                #    custom_dict[sprite] += list_calls
+                #    list_customblocks_sprite.append(custom_dict)
                 if self.ignoringisactive and block["opcode"] not in ignoreblock_list:
                     if block["topLevel"]:
                         if tmp_blocks:
@@ -154,8 +169,15 @@ class DuplicateScripts():
                     for i in script_dict_test[sprite]:
                         try:
                             if parent in i: #SLICE INDEXING IN LIST
-                                del i[i.index(parent)+1] # PARA BORRAR EL LOOP QUE SE DUPLICA
-                                i[i.index(parent)+1:1] = loops_dict[parent]
+                                try:
+                                    del i[i.index(parent)+1] # PARA BORRAR EL LOOP QUE SE DUPLICA
+                                    i[i.index(parent)+1:1] = loops_dict[parent]
+                                except: # borrar el final
+                                    del i[i.index(parent)] # PARA BORRAR EL LOOP QUE SE DUPLICA
+                                    print("salgo1") 
+                                    # VER ESTE CASO CON MAS PROFUNDIDAD
+                                    i[0:1] = loops_dict[parent]
+                                    print("salgo2")
                             elif parent == "loopistop":
                                 i[0:1] = loops_dict[parent] # Index distinto para los loops que son top level
                         except:
@@ -169,7 +191,9 @@ class DuplicateScripts():
                     if block[j] != "END_LOOP" and block[j] != "END_CONDITION" and block[j] != "END_LOOP_CONDITIONAL":
                         opcode = opcode_dict[block[j]]
                         block[j] = opcode
+        
         #print(script_dict_test)
+        #print(custom_dict)
 
         scripts_dict = script_dict_test
         # Intra-sprite
@@ -187,6 +211,11 @@ class DuplicateScripts():
         for sprite in scripts_dict:
             blocks += scripts_dict[sprite]
         self.project_dups_list = find_dups(blocks)
+
+        # Custom Blocks information
+        self.customblocks_info = {}
+        self.customblocks_info = {"name": filename.split(".")[0], "custom_blocks": list_customblocks_sprite, "n_custom_blocks": self.count_definitions,
+                "n_custom_blocks_calls": self.count_calls}
 
     def search_next(self, block_list, block_id):
 
@@ -208,12 +237,17 @@ class DuplicateScripts():
         with open(filename.replace('.json', '') + '-project.json',
                   'w') as outfile:
             json.dump(self.project_dups_list, outfile)
+        with open(filename.replace('.json', '') + '-customblocksinfo.json',
+                  'w') as outfile:
+            json.dump(self.customblocks_info, outfile)
 
         count = sum([len(listElem) for listElem in self.intra_dups_list])
         count = len(self.intra_dups_list)
-        result = ("{} intra-sprite duplicate scripts found\n".format(count))
+        result = ("\n{} intra-sprite duplicate scripts found\n".format(count))
         result += ("%d project-wide duplicate scripts found\n" %
                    len(self.project_dups_list))
+        result += (str(self.count_definitions) + " custom blocks found\n")
+        result += (str(self.count_calls) + " custom blocks calls found\n")
         return result
 
 def get_function_blocks_id(start, block_dict):
@@ -237,16 +271,13 @@ def get_function_blocks_id(start, block_dict):
 
 def getcustominfo(block, custom_dict, sprite, block_dict):
     print(block)
-    print(block["parent"])
-    #list_function_blocks = get_function_blocks(parent, e[k])
+    list_function_blocks = get_function_blocks(block["parent"], block_dict)
     custom_dict[sprite].append({"type": "procedures_prototype", "name": block["mutation"]["proccode"],
             "argument_names":block["mutation"]["argumentnames"],
             "argument_ids": block["mutation"]["argumentids"],
-            "blocks": "falta",#list_function_blocks,
+            "blocks": list_function_blocks,
             "n_calls": 0})
-    print("entro")
-    print(custom_dict)
-    print("salgo")
+    #print(custom_dict)
 
 def getloop_ids(block_value, blocks_dict, block_id):
     list_loop = []
@@ -291,61 +322,6 @@ def get_function_blocks(start, block_dict):
         else:
             begin = None
     return list_blocks
-
-def customb(filename):
-    json_project = json.loads(open(filename).read())
-    list_customblocks_sprite = []
-    list_calls = []
-    count_definitions = 0
-    count_calls = 0
-    custom_list = []
-    data = {}
-    for e in json_project["targets"]:
-        for k in e:
-            if k == "blocks":
-                name = e["name"] #SPRITE NAME
-                data[name] = [] # ATENCION A ESTE MODO DE INDEXAR LISTAS EN DICCIONARIOS
-                list_calls = []
-                is_stage = e["isStage"] # SIMPLEMENTE PARA SABER SI ES STAGE
-                list_custom = []
-                for key in e[k]:
-                    #print(e[k][key])
-                    if e[k][key]["opcode"] == "procedures_prototype":
-                        parent = e[k][key]["parent"]
-                        list_function_blocks = get_function_blocks(parent, e[k])
-                        #print(e[k][key])
-                        list_custom.append(e[k][key]["opcode"])
-                        #list_custom.append(e[k][key]["mutation"]["proccode"])
-                        data[name].append({"type": "procedures_prototype", "name": e[k][key]["mutation"]["proccode"],
-                                "argument_names":e[k][key]["mutation"]["argumentnames"],
-                                "argument_ids": e[k][key]["mutation"]["argumentids"],
-                                "blocks": list_function_blocks,
-                                "n_calls": 0})
-                        count_definitions += 1
-                        list_custom.extend(list_function_blocks)
-                        custom_list.append(list_custom)
-                    elif e[k][key]["opcode"] == "procedures_call":
-                        list_calls.append({"type": "procedures_call", "name": e[k][key]["mutation"]["proccode"],
-                                            "argument_ids":e[k][key]["mutation"]["argumentids"]})
-                        count_calls += 1
-                for call in list_calls:
-                    for procedure in data[name]:
-                        #print(procedure["name"], procedure["type"], " ||| ", call)
-                        if procedure["name"] == call["name"] and procedure["type"] == "procedures_prototype":
-                            #print("encuentra llamada")
-                            procedure["n_calls"] = procedure["n_calls"] + 1
-                data[name] += list_calls
-                list_customblocks_sprite.append(data)
-    data = {"name": filename.split(".")[0], "custom_blocks": list_customblocks_sprite, "n_custom_blocks": count_definitions,
-            "n_custom_blocks_calls": count_calls}
-
-    print(count_definitions, " custom blocks found")
-    print(count_calls, " custom blocks calls found")
-    print(custom_list)
-
-    with open(filename.replace('.json', '') + '-customsprite.json',
-              'w') as outfile:
-        json.dump(custom_list, outfile)
 
 
 def main(filename, ignoring):
