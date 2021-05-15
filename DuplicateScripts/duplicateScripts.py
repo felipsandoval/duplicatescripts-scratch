@@ -131,13 +131,15 @@ class DuplicateScripts():
                     list_calls.append({"type": "procedures_call", "name": block["mutation"]["proccode"],
                         "argument_ids":block["mutation"]["argumentids"]})
                     self.count_calls += 1
-                    #for call in list_calls:
-                        #for procedure in custom_dict[sprite]:
-                            #print(len(custom_dict))
-                            #if procedure["name"] == call["name"] and procedure["type"] == "procedures_prototype":
-                            #    procedure["n_calls"] = procedure["n_calls"] + 1
-                    #custom_dict[sprite] += list_calls
-                    #list_customblocks_sprite.append(custom_dict)
+                    for call in list_calls:
+                            #print(call)
+                        for procedure in custom_dict[sprite]:
+                            #print(procedure)
+                            if procedure["name"] == call["name"] and procedure["type"] == "procedures_prototype":
+                                procedure["n_calls"] = procedure["n_calls"] + 1
+                        print("salgo")
+                    custom_dict[sprite] += list_calls
+                    list_customblocks_sprite.append(custom_dict)
                 if block["topLevel"]:
                     sucesive_list = self.search_next([], block_id)
                     scripts_dict[sprite].append(sucesive_list)
@@ -158,7 +160,7 @@ class DuplicateScripts():
                             block[j] = "Se tiene que eliminar"
 
             #print(custom_dict[sprite])
-        print(scripts_dict)
+        #print(scripts_dict)
 
         # Intra-sprite
         self.intra_dups_list = []
