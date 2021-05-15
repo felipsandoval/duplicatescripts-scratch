@@ -137,8 +137,7 @@ class DuplicateScripts():
                             #print(procedure)
                             if procedure["name"] == call["name"] and procedure["type"] == "procedures_prototype":
                                 procedure["n_calls"] = procedure["n_calls"] + 1
-                        print("salgo")
-                    custom_dict[sprite] += list_calls
+                    #custom_dict[sprite] += list_calls # ESTO FALLA WTF
                     list_customblocks_sprite.append(custom_dict)
                 if block["topLevel"]:
                     sucesive_list = self.search_next([], block_id)
