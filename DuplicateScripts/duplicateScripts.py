@@ -91,9 +91,7 @@ class DuplicateScripts():
         """Start parsering it"""
         json_project = obtaining_json(filename)
         scripts_dict = {}
-        script_dict_test = {}
         ignoreblock_list = blocks2ignore()
-        loops_dict = {}
         custom_dict = {}
         list_calls = []
         list_customblocks_sprite = []
@@ -101,16 +99,15 @@ class DuplicateScripts():
         # Loops through all sprites (and canva "sprite" too)
         for sprites_dict in json_project["targets"]:
             sprite = sprites_dict["name"]
-            self.blocks_dict = {}
+            self.blocks_dict = {} # block id -> block value
             scripts_dict[sprite] = []
             custom_dict[sprite] = []
-            script_dict_test[sprite] = []
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
                     self.blocks_dict[blocks] = blocks_value
 
-
+            loops_dict = {}
             opcode_dict = {}   # block id -> block opcode
             tmp_blocks = []
             loop_list = []
@@ -126,8 +123,6 @@ class DuplicateScripts():
                         loops_dict[block["parent"]] = loop_list
                     else:
                         loops_dict["loopistop"] = loop_list
-                    #print(loops_dict)
-                    # ESTO FUNCIONA
                 #if block["opcode"] == "procedures_prototype":
                 #    getcustominfo(block, custom_dict, sprite, self.blocks_dict)
                 #    self.count_definitions += 1
@@ -152,55 +147,26 @@ class DuplicateScripts():
                     print("IGNORO BLOQUE")
                 else:
                     if block["topLevel"]:
-                        testing = self.search_next([], block_id)
-                        script_dict_test[sprite].append(testing)
-                        if tmp_blocks: 
-                            scripts_dict[sprite].append(tmp_blocks)
-                        tmp_blocks = [block["opcode"]]
+                        sucesive_list = self.search_next([], block_id)
+                        scripts_dict[sprite].append(sucesive_list)
                         topLevel_list.append(block_id)
-                    else:
-                        tmp_blocks.append(block["opcode"])
-            scripts_dict[sprite].append(tmp_blocks)
 
             if existloop:
                 existloop = False
-                for block_id in loops_dict:
-                    parent = block_id
-                    for i in script_dict_test[sprite]:
-                        try:
-                            if parent in i: #SLICE INDEXING IN LIST
-                                try:
-                                    del i[i.index(parent)+1] # PARA BORRAR EL LOOP QUE SE DUPLICA
-                                    i[i.index(parent)+1:1] = loops_dict[parent]
-                                except: # borrar el final
-                                    del i[i.index(parent)] # PARA BORRAR EL LOOP QUE SE DUPLICA
-                                    print("salgo1") 
-                                    # VER ESTE CASO CON MAS PROFUNDIDAD
-                                    i[0:1] = loops_dict[parent]
-                                    print("salgo2")
-                            elif parent == "loopistop":
-                                i[0:1] = loops_dict[parent] # Index distinto para los loops que son top level
-                        except:
-                            print("un objeto vacío")
-                            pass
-    
-            #CAMBIANDO VALOR DE BLOCK_ID POR OPCODE. FUNCIONA CON CONTROL_REPEAT
-            for block in script_dict_test[sprite]:
-                for j in range(len(block)):
-                    #print(block[j])
-                    if block[j] != "END_LOOP" and block[j] != "END_CONDITION" and block[j] != "END_LOOP_CONDITIONAL":
-                        opcode = opcode_dict[block[j]]
-                        block[j] = opcode
-        
-        #print(script_dict_test)
-        #print(custom_dict)
+                self.addloopblock(loops_dict, scripts_dict, sprite)
 
-        scripts_dict = script_dict_test
+            #CAMBIANDO VALOR DE BLOCK_ID POR OPCODE. FUNCIONA CON CONTROL_REPEAT
+            for block in scripts_dict[sprite]:
+                for j in range(len(block)):
+                    if block[j] != "END_LOOP" and block[j] != "END_CONDITION" and block[j] != "END_LOOP_CONDITIONAL":
+                        block[j] = opcode_dict[block[j]]
+        
+        #print(scripts_dict)
+
         # Intra-sprite
         self.intra_dups_list = []
         for sprite in scripts_dict:
             blocks = scripts_dict[sprite]
-            #print(blocks)
             dups = find_dups(blocks)
             if dups:
                 self.intra_dups_list.append(dups[0])
@@ -221,13 +187,22 @@ class DuplicateScripts():
 
         block = self.blocks_dict[block_id]
         block_list.append(block_id)
-        next_block = block["next"]
         if block["next"] == None:
-            return block_list
+            return block_list # In case there is an unique block, se puede optimizar
         else:
-            block_id = next_block
+            block_id = block["next"]
             block_list = self.search_next(block_list, block_id)
         return block_list
+    
+    def addloopblock(self, loops_dict, scripts_dict, sprite):
+        for parent in loops_dict:
+            for list in scripts_dict[sprite]:
+                if parent == "loopistop":
+                    list[0:1] = loops_dict[parent] # Index distinto para los loops que son top level
+                elif parent in list: #SLICE INDEXING IN LIST
+                    position = list.index(parent) 
+                    del list[position] # PARA BORRAR EL LOOP QUE SE DUPLICA
+                    list[position:1] = loops_dict[parent]
 
     def finalize(self, filename):
         """Output the duplicate scripts detected."""
@@ -255,8 +230,7 @@ def get_function_blocks_id(start, block_dict):
     list_blocks_id = []
     list_blocks_id.append(start)
     next_block_id = block_dict[start]["next"]
-    #N0 LE PUEDO PASAR UN START QUE ESTE NULO O SEA
-    if next_block_id == None:
+    if next_block_id == None: # CASE: there is only a single block inside a loop or to list a condition
         next_block = None
     else:
         next_block = block_dict[next_block_id]
@@ -270,43 +244,32 @@ def get_function_blocks_id(start, block_dict):
     return list_blocks_id
 
 def getcustominfo(block, custom_dict, sprite, block_dict):
-    print(block)
     list_function_blocks = get_function_blocks(block["parent"], block_dict)
     custom_dict[sprite].append({"type": "procedures_prototype", "name": block["mutation"]["proccode"],
             "argument_names":block["mutation"]["argumentnames"],
             "argument_ids": block["mutation"]["argumentids"],
             "blocks": list_function_blocks,
             "n_calls": 0})
-    #print(custom_dict)
 
 def getloop_ids(block_value, blocks_dict, block_id):
     list_loop = []
-    try:
-        start = block_value["inputs"]["SUBSTACK"][1]
-        if start == None:
-            list_loop.append(block_id)
-            return list_loop
-        list_function_blocks_id = get_function_blocks_id(start, blocks_dict)
-    except:
-        list_loop.append(block_id)
+    start = block_value["inputs"]["SUBSTACK"][1]
+    list_loop.append(block_id)
+    if start == None: # In case a loop does not have anything inside.
         return list_loop
-    #list_loop.append(blocks_dict[block_value["inputs"]["SUBSTACK"][1]]["parent"])
-    list_loop.append(block_id) # es lo mismo que arriba, menos enrevesado
-    list_loop.extend(list_function_blocks_id)
+    list_blocks_id = get_function_blocks_id(start, blocks_dict)
+    list_loop.extend(list_blocks_id)
     if block_value["opcode"] in CONDITIONALS:
         list_loop.append("END_LOOP")
         start = block_value["inputs"]["CONDITION"][1]
-        testing_cond = get_function_blocks_id(start, blocks_dict)
+        list_cond_id = get_function_blocks_id(start, blocks_dict)
+        list_loop.extend(list_cond_id)
+        list_loop.append("END_CONDITION")
         if block_value["opcode"] == "control_if_else":
-            list_loop.extend(testing_cond)
-            list_loop.append("END_CONDITION")
             start = block_value["inputs"]["SUBSTACK2"][1]
-            list_loop_conditional = get_function_blocks_id(start, blocks_dict)
-            list_loop.extend(list_loop_conditional)
+            list_blocks2_id = get_function_blocks_id(start, blocks_dict)
+            list_loop.extend(list_blocks2_id)
             list_loop.append("END_LOOP_CONDITIONAL")
-        else:
-            list_loop.extend(testing_cond)
-            list_loop.append("END_CONDITION")
     else:
         list_loop.append("END_LOOP")
     return list_loop
