@@ -123,19 +123,19 @@ class DuplicateScripts():
                         loops_dict[block["parent"]] = loop_list
                     else:
                         loops_dict["loopistop"] = loop_list
-                #if block["opcode"] == "procedures_prototype":
-                #    getcustominfo(block, custom_dict, sprite, self.blocks_dict)
-                #    self.count_definitions += 1
-                #elif block["opcode"] == "procedures_call":
-                #    list_calls.append({"type": "procedures_call", "name": block["mutation"]["proccode"],
-                #        "argument_ids":block["mutation"]["argumentids"]})
-                #    self.count_calls += 1
-                #    for call in list_calls:
-                #        for procedure in custom_dict[sprite]:
-                #            if procedure["name"] == call["name"] and procedure["type"] == "procedures_prototype":
-                #                procedure["n_calls"] = procedure["n_calls"] + 1
-                #    custom_dict[sprite] += list_calls
-                #    list_customblocks_sprite.append(custom_dict)
+                if block["opcode"] == "procedures_prototype":
+                    getcustominfo(block, custom_dict, sprite, self.blocks_dict)
+                    self.count_definitions += 1
+                elif block["opcode"] == "procedures_call":
+                    list_calls.append({"type": "procedures_call", "name": block["mutation"]["proccode"],
+                        "argument_ids":block["mutation"]["argumentids"]})
+                    self.count_calls += 1
+                    for call in list_calls:
+                        for procedure in custom_dict[sprite]:
+                            if procedure["name"] == call["name"] and procedure["type"] == "procedures_prototype":
+                                procedure["n_calls"] = procedure["n_calls"] + 1
+                    custom_dict[sprite] += list_calls
+                    list_customblocks_sprite.append(custom_dict)
                 if self.ignoringisactive and block["opcode"] not in ignoreblock_list:
                     if block["topLevel"]:
                         if tmp_blocks:
@@ -161,7 +161,7 @@ class DuplicateScripts():
                     if block[j] != "END_LOOP" and block[j] != "END_CONDITION" and block[j] != "END_LOOP_CONDITIONAL":
                         block[j] = opcode_dict[block[j]]
         
-        #print(scripts_dict)
+        print(scripts_dict)
 
         # Intra-sprite
         self.intra_dups_list = []
@@ -200,9 +200,15 @@ class DuplicateScripts():
                 if parent == "loopistop":
                     list[0:1] = loops_dict[parent] # Index distinto para los loops que son top level
                 elif parent in list: #SLICE INDEXING IN LIST
-                    position = list.index(parent) 
-                    del list[position] # PARA BORRAR EL LOOP QUE SE DUPLICA
-                    list[position:1] = loops_dict[parent]
+                    position = list.index(parent)
+                    if position+1 != len(list): # VER ESTO PORQUE EL BORRAR AL FINAL NO DEBERÍA SER PROBLEMA
+                        del list[position+1] # PARA BORRAR EL LOOP QUE SE DUPLICA
+                        list[position+1:1] = loops_dict[parent]
+                    else: # en caso que sea la ultima pos
+                        print("VER ESTE TEMA")
+                        print(position)
+                        del list[position] # PARA BORRAR EL LOOP QUE SE DUPLICA
+                        list[position:1] = loops_dict[parent]
 
     def finalize(self, filename):
         """Output the duplicate scripts detected."""
@@ -243,8 +249,19 @@ def get_function_blocks_id(start, block_dict):
             next_block = None
     return list_blocks_id
 
+def get_function_blocks_opcode(start, block_dict):
+    list_blocks = []
+    begin = block_dict[block_dict[start]["next"]]
+    while begin != None:
+        list_blocks.append(begin["opcode"])
+        if begin["next"] != None:
+            begin = block_dict[begin["next"]]
+        else:
+            begin = None
+    return list_blocks
+
 def getcustominfo(block, custom_dict, sprite, block_dict):
-    list_function_blocks = get_function_blocks(block["parent"], block_dict)
+    list_function_blocks = get_function_blocks_opcode(block["parent"], block_dict)
     custom_dict[sprite].append({"type": "procedures_prototype", "name": block["mutation"]["proccode"],
             "argument_names":block["mutation"]["argumentnames"],
             "argument_ids": block["mutation"]["argumentids"],
@@ -274,26 +291,12 @@ def getloop_ids(block_value, blocks_dict, block_id):
         list_loop.append("END_LOOP")
     return list_loop
 
-
-def get_function_blocks(start, block_dict):
-    list_blocks = []
-    begin = block_dict[block_dict[start]["next"]]
-    while begin != None:
-        list_blocks.append(begin["opcode"])
-        if begin["next"] != None:
-            begin = block_dict[begin["next"]]
-        else:
-            begin = None
-    return list_blocks
-
-
 def main(filename, ignoring):
     """The entrypoint for the 'duplicateScripts' extension"""
     duplicate = DuplicateScripts(ignoring)
     print("Looking for duplicate scripts in", filename)
     print()
     duplicate.analyze(filename)
-    #customb(filename)
     print("Minimum number of blocks:", N_BLOCKS)
     print(duplicate.finalize(filename))
 
