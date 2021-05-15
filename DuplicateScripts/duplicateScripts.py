@@ -12,6 +12,7 @@ N_BLOCKS = 6
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
                "control_if_else", "control_repeat_until"]
 CONDITIONALS = ["control_if", "control_if_else", "control_repeat_until"]
+CONTROL_MARKS = ["END_LOOP", "END_CONDITION", "END_LOOP_CONDITIONAL"]
 
 def find_dups(blocks):
     """
@@ -130,26 +131,17 @@ class DuplicateScripts():
                     list_calls.append({"type": "procedures_call", "name": block["mutation"]["proccode"],
                         "argument_ids":block["mutation"]["argumentids"]})
                     self.count_calls += 1
-                    for call in list_calls:
-                        for procedure in custom_dict[sprite]:
-                            if procedure["name"] == call["name"] and procedure["type"] == "procedures_prototype":
-                                procedure["n_calls"] = procedure["n_calls"] + 1
-                    custom_dict[sprite] += list_calls
-                    list_customblocks_sprite.append(custom_dict)
-                if self.ignoringisactive and block["opcode"] not in ignoreblock_list:
-                    if block["topLevel"]:
-                        if tmp_blocks:
-                            scripts_dict[sprite].append(tmp_blocks)
-                        tmp_blocks = [block["opcode"]]
-                    else:
-                        tmp_blocks.append(block["opcode"])
-                elif self.ignoringisactive:
-                    print("IGNORO BLOQUE")
-                else:
-                    if block["topLevel"]:
-                        sucesive_list = self.search_next([], block_id)
-                        scripts_dict[sprite].append(sucesive_list)
-                        topLevel_list.append(block_id)
+                    #for call in list_calls:
+                        #for procedure in custom_dict[sprite]:
+                            #print(len(custom_dict))
+                            #if procedure["name"] == call["name"] and procedure["type"] == "procedures_prototype":
+                            #    procedure["n_calls"] = procedure["n_calls"] + 1
+                    #custom_dict[sprite] += list_calls
+                    #list_customblocks_sprite.append(custom_dict)
+                if block["topLevel"]:
+                    sucesive_list = self.search_next([], block_id)
+                    scripts_dict[sprite].append(sucesive_list)
+                    topLevel_list.append(block_id)
 
             if existloop:
                 existloop = False
@@ -158,9 +150,14 @@ class DuplicateScripts():
             #CAMBIANDO VALOR DE BLOCK_ID POR OPCODE. FUNCIONA CON CONTROL_REPEAT
             for block in scripts_dict[sprite]:
                 for j in range(len(block)):
-                    if block[j] != "END_LOOP" and block[j] != "END_CONDITION" and block[j] != "END_LOOP_CONDITIONAL":
+                    if block[j] not in CONTROL_MARKS:
                         block[j] = opcode_dict[block[j]]
-        
+                    if self.ignoringisactive:
+                        if block[j] in ignoreblock_list and block[j] not in CONTROL_MARKS:
+                            print("entré en un block que se tiene que ignorar")
+                            block[j] = "Se tiene que eliminar"
+
+            #print(custom_dict[sprite])
         print(scripts_dict)
 
         # Intra-sprite
@@ -299,7 +296,6 @@ def main(filename, ignoring):
     duplicate.analyze(filename)
     print("Minimum number of blocks:", N_BLOCKS)
     print(duplicate.finalize(filename))
-
 
 if __name__ == "__main__":
     try:
