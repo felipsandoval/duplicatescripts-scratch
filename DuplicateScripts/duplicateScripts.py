@@ -6,7 +6,8 @@ import json
 import zipfile
 import sys
 import shutil
-import os
+import os # ver este tema en windows ?
+import unittest
 
 N_BLOCKS = 6
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
@@ -16,8 +17,8 @@ CONTROL_MARKS = ["END_LOOP", "END_CONDITION", "END_LOOP_CONDITIONAL"]
 
 def find_dups(blocks):
     """
-    Given blocks, which is a list of sequences of blocks
-    Returns those subsequences that are duplicated
+    Given a list of sequences of blocks opcodes
+    returns those subsequences that are duplicated
     """
     return_list = []
     for i in range(len(blocks)):
@@ -110,7 +111,6 @@ class DuplicateScripts():
 
             loops_dict = {}
             opcode_dict = {}   # block id -> block opcode
-            tmp_blocks = []
             loop_list = []
             topLevel_list = []
             existloop = False
@@ -120,6 +120,7 @@ class DuplicateScripts():
                 if block["opcode"] in LOOP_BLOCKS:
                     existloop = True
                     loop_list = getloop_ids(block, self.blocks_dict, block_id)
+                    print(block)
                     if block["parent"] != None:
                         loops_dict[block["parent"]] = loop_list
                     else:
@@ -156,7 +157,7 @@ class DuplicateScripts():
                     if self.ignoringisactive:
                         if block[j] in ignoreblock_list and block[j] not in CONTROL_MARKS:
                             print("entré en un block que se tiene que ignorar")
-                            block[j] = "Se tiene que eliminar"
+                            block[j] = "IGNORED BLOCK, should delete"
 
             #print(custom_dict[sprite])
         #print(scripts_dict)
@@ -200,13 +201,19 @@ class DuplicateScripts():
                 elif parent in list: #SLICE INDEXING IN LIST
                     position = list.index(parent)
                     if position+1 != len(list): # VER ESTO PORQUE EL BORRAR AL FINAL NO DEBERÍA SER PROBLEMA
+                        #print(list)
                         del list[position+1] # PARA BORRAR EL LOOP QUE SE DUPLICA
                         list[position+1:1] = loops_dict[parent]
+                        #print(list)
                     else: # en caso que sea la ultima pos
-                        print("VER ESTE TEMA")
-                        print(position)
-                        del list[position] # PARA BORRAR EL LOOP QUE SE DUPLICA
-                        list[position:1] = loops_dict[parent]
+                        #print(list)
+                        #print(parent)
+                        #print(loops_dict[parent])
+                        #print("VER ESTE TEMA")
+                        #print(position)
+                        #del list[position] # PARA BORRAR EL LOOP QUE SE DUPLICA
+                        #list[position:1] = loops_dict[parent]
+                        list.extend(loops_dict[parent])
 
     def finalize(self, filename):
         """Output the duplicate scripts detected."""
