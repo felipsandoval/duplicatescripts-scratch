@@ -7,7 +7,6 @@ import zipfile
 import sys
 import shutil
 import os # ver este tema en windows ?
-import unittest
 
 N_BLOCKS = 6
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
@@ -23,11 +22,8 @@ def find_dups(blocks):
     return_list = []
     for i in range(len(blocks)):
         for j in range(i + 1, len(blocks)):
-            #print(blocks[i], blocks[j])
             s = SequenceMatcher(None, blocks[i], blocks[j]) 
-            #print(s.ratio()*100)
             match = s.find_longest_match(0, len(blocks[i]), 0, len(blocks[j]))
-            #print(match.size)
             if match.size >= N_BLOCKS:
                 return_list.append(blocks[i][match.a:match.a + match.size])
     return return_list
@@ -120,7 +116,6 @@ class DuplicateScripts():
                 if block["opcode"] in LOOP_BLOCKS:
                     existloop = True
                     loop_list = getloop_ids(block, self.blocks_dict, block_id)
-                    print(block)
                     if block["parent"] != None:
                         loops_dict[block["parent"]] = loop_list
                     else:
@@ -266,35 +261,44 @@ def get_function_blocks_opcode(start, block_dict):
     return list_blocks
 
 def getcustominfo(block, custom_dict, sprite, block_dict):
-    list_function_blocks = get_function_blocks_opcode(block["parent"], block_dict)
-    custom_dict[sprite].append({"type": "procedures_prototype", "name": block["mutation"]["proccode"],
-            "argument_names":block["mutation"]["argumentnames"],
-            "argument_ids": block["mutation"]["argumentids"],
-            "blocks": list_function_blocks,
-            "n_calls": 0})
+    try:
+        list_function_blocks = get_function_blocks_opcode(block["parent"], block_dict)
+        custom_dict[sprite].append({"type": "procedures_prototype", "name": block["mutation"]["proccode"],
+                "argument_names":block["mutation"]["argumentnames"],
+                "argument_ids": block["mutation"]["argumentids"],
+                "blocks": list_function_blocks,
+                "n_calls": 0})
+    except KeyError:
+        # COMENTARLE A GREGORIO QUE HAY CASOS EN LOS QUE NO EXISTE EL PARENT
+        pass
 
 def getloop_ids(block_value, blocks_dict, block_id):
-    list_loop = []
-    start = block_value["inputs"]["SUBSTACK"][1]
-    list_loop.append(block_id)
-    if start == None: # In case a loop does not have anything inside.
+    try: # Esto porque hay casos en los que no tiene SUBSTACK, Ni SUBSTACK2.. no entiendo por qué
+        list_loop = []
+        list_loop.append(block_id)
+        start = block_value["inputs"]["SUBSTACK"][1]
+        list_loop.append(block_id)
+        if start == None: # In case a loop does not have anything inside.
+            return list_loop
+        list_blocks_id = get_function_blocks_id(start, blocks_dict)
+        list_loop.extend(list_blocks_id)
+        if block_value["opcode"] in CONDITIONALS:
+            list_loop.append("END_LOOP")
+            start = block_value["inputs"]["CONDITION"][1]
+            list_cond_id = get_function_blocks_id(start, blocks_dict)
+            list_loop.extend(list_cond_id)
+            list_loop.append("END_CONDITION")
+            if block_value["opcode"] == "control_if_else":
+                    start = block_value["inputs"]["SUBSTACK2"][1]
+                    if start != None:
+                        list_blocks2_id = get_function_blocks_id(start, blocks_dict)
+                        list_loop.extend(list_blocks2_id)
+                    list_loop.append("END_LOOP_CONDITIONAL")
+        else:
+            list_loop.append("END_LOOP")
         return list_loop
-    list_blocks_id = get_function_blocks_id(start, blocks_dict)
-    list_loop.extend(list_blocks_id)
-    if block_value["opcode"] in CONDITIONALS:
-        list_loop.append("END_LOOP")
-        start = block_value["inputs"]["CONDITION"][1]
-        list_cond_id = get_function_blocks_id(start, blocks_dict)
-        list_loop.extend(list_cond_id)
-        list_loop.append("END_CONDITION")
-        if block_value["opcode"] == "control_if_else":
-            start = block_value["inputs"]["SUBSTACK2"][1]
-            list_blocks2_id = get_function_blocks_id(start, blocks_dict)
-            list_loop.extend(list_blocks2_id)
-            list_loop.append("END_LOOP_CONDITIONAL")
-    else:
-        list_loop.append("END_LOOP")
-    return list_loop
+    except KeyError:
+        return list_loop
 
 def main(filename, ignoring):
     """The entrypoint for the 'duplicateScripts' extension"""
