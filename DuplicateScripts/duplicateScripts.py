@@ -58,10 +58,16 @@ def sb3_json_extraction(fileIn):
 def obtaining_json(filename):
     """Obtains JSON"""
     try:
+        json_files_list = []
         if filename.endswith(".zip"):
             zip_file = zipfile.ZipFile(filename, "r")
             # Aquí hay que hacer el caso en el que sean VARIOS archivos JSON.
-            json_file = json.loads(zip_file.open("project.json").read())
+            listOfFileNames = zip_file.namelist()
+            for file in listOfFileNames:
+                if file.endswith('.json'):
+                    json_files_list.append(file)
+            return json_files_list
+            #json_file = zip_file.extract(fileName)
         elif filename.endswith(".json"):
             json_file = json.loads(open(filename).read())
         elif filename.endswith(".sb3"):
@@ -85,9 +91,9 @@ class DuplicateScripts():
         self.count_definitions = 0
         self.count_calls = 0
 
-    def analyze(self, filename):
+    def analyze(self, filename, json_project):
         """Start parsering it"""
-        json_project = obtaining_json(filename)
+        #json_project = obtaining_json(filename)
         scripts_dict = {}
         ignoreblock_list = blocks2ignore()
         custom_dict = {}
@@ -116,9 +122,13 @@ class DuplicateScripts():
                 if block["opcode"] in LOOP_BLOCKS:
                     existloop = True
                     loop_list = getloop_ids(block, self.blocks_dict, block_id)
-                    if block["parent"] != None:
-                        loops_dict[block["parent"]] = loop_list
-                    else:
+                    #print(block)
+                    try:
+                        if block["parent"] != None:
+                            loops_dict[block["parent"]] = loop_list
+                        else:
+                            loops_dict["loopistop"] = loop_list
+                    except:
                         loops_dict["loopistop"] = loop_list
                 if block["opcode"] == "procedures_prototype":
                     getcustominfo(block, custom_dict, sprite, self.blocks_dict)
@@ -302,12 +312,26 @@ def getloop_ids(block_value, blocks_dict, block_id):
 
 def main(filename, ignoring):
     """The entrypoint for the 'duplicateScripts' extension"""
-    duplicate = DuplicateScripts(ignoring)
-    print("Looking for duplicate scripts in", filename)
-    print()
-    duplicate.analyze(filename)
-    print("Minimum number of blocks:", N_BLOCKS)
-    print(duplicate.finalize(filename))
+    json_project = obtaining_json(filename)
+    if filename.endswith('.zip'):
+        print("HAGO MUCHOS")
+        for i in json_project:
+            print(i)
+            filename = i
+            json_file = json.loads(open(i).read())
+            duplicate = DuplicateScripts(ignoring)
+            print("Looking for duplicate scripts in", filename)
+            print()
+            duplicate.analyze(filename, json_file)
+            print("Minimum number of blocks:", N_BLOCKS)
+            print(duplicate.finalize(filename))
+    else:
+        duplicate = DuplicateScripts(ignoring)
+        print("Looking for duplicate scripts in", filename)
+        print()
+        duplicate.analyze(filename, json_project)
+        print("Minimum number of blocks:", N_BLOCKS)
+        print(duplicate.finalize(filename))
 
 if __name__ == "__main__":
     try:
