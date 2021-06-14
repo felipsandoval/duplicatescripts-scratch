@@ -128,7 +128,7 @@ class DuplicateScripts():
                             loops_dict[block["parent"]] = loop_list
                         else:
                             loops_dict["loopistop"] = loop_list
-                    except:
+                    except KeyError:
                         loops_dict["loopistop"] = loop_list
                 if block["opcode"] == "procedures_prototype":
                     getcustominfo(block, custom_dict, sprite, self.blocks_dict)
