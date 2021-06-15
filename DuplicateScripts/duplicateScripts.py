@@ -6,7 +6,7 @@ import json
 import zipfile
 import sys
 import shutil
-import os # ver este tema en windows ?
+#import os # ver este tema en windows ?
 
 N_BLOCKS = 6
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
@@ -52,22 +52,22 @@ def sb3_json_extraction(fileIn):
         if fileName.endswith('.json'):
             json_file = zip_file.extract(fileName)
     json_project = json.loads(open(json_file).read())
-    #os.remove(fileOut)
+    # os.remove(fileOut)
     return json_project
 
 def obtaining_json(filename):
-    """Obtains JSON"""
+    """Obtains JSON file from different extentions"""
     try:
         json_files_list = []
         if filename.endswith(".zip"):
+            # Creates a list with all JSON filenames
             zip_file = zipfile.ZipFile(filename, "r")
-            # Aquí hay que hacer el caso en el que sean VARIOS archivos JSON.
             listOfFileNames = zip_file.namelist()
             for file in listOfFileNames:
                 if file.endswith('.json'):
+                   # zip_file.extract(file)
                     json_files_list.append(file)
             return json_files_list
-            #json_file = zip_file.extract(fileName)
         elif filename.endswith(".json"):
             json_file = json.loads(open(filename).read())
         elif filename.endswith(".sb3"):
@@ -78,6 +78,75 @@ def obtaining_json(filename):
         sys.exit("\nPlease, use a valid extension file like .SB3," +
         " JSON or .ZIP\n")
     return json_file
+
+def get_function_blocks_id(start, block_dict):
+    """Get the block_ids inside loops"""
+    list_blocks_id = []
+    list_blocks_id.append(start)
+    next_block_id = block_dict[start]["next"]
+    if next_block_id == None: # CASE: there is only a single block inside a loop or to list a condition
+        next_block = None
+    else:
+        next_block = block_dict[next_block_id]
+    while next_block != None:
+        list_blocks_id.append(next_block_id)
+        if block_dict[next_block_id]["next"] != None:
+            next_block_id = block_dict[next_block_id]["next"]
+            next_block = block_dict[next_block_id]
+        else:
+            next_block = None
+    return list_blocks_id
+
+def get_function_blocks_opcode(start, block_dict):
+    list_blocks = []
+    begin = block_dict[block_dict[start]["next"]]
+    while begin != None:
+        list_blocks.append(begin["opcode"])
+        if begin["next"] != None:
+            begin = block_dict[begin["next"]]
+        else:
+            begin = None
+    return list_blocks
+
+def getcustominfo(block, custom_dict, sprite, block_dict):
+    try:
+        list_function_blocks = get_function_blocks_opcode(block["parent"], block_dict)
+        custom_dict[sprite].append({"type": "procedures_prototype", "name": block["mutation"]["proccode"],
+                "argument_names":block["mutation"]["argumentnames"],
+                "argument_ids": block["mutation"]["argumentids"],
+                "blocks": list_function_blocks,
+                "n_calls": 0})
+    except KeyError:
+        # COMENTARLE A GREGORIO QUE HAY CASOS EN LOS QUE NO EXISTE EL PARENT
+        pass
+
+def getloop_ids(block_value, blocks_dict, block_id):
+    try: # Esto porque hay casos en los que no tiene SUBSTACK, Ni SUBSTACK2.. no entiendo por qué
+        list_loop = []
+        list_loop.append(block_id)
+        start = block_value["inputs"]["SUBSTACK"][1]
+        list_loop.append(block_id)
+        if start == None: # In case a loop does not have anything inside.
+            return list_loop
+        list_blocks_id = get_function_blocks_id(start, blocks_dict)
+        list_loop.extend(list_blocks_id)
+        if block_value["opcode"] in CONDITIONALS:
+            list_loop.append("END_LOOP")
+            start = block_value["inputs"]["CONDITION"][1]
+            list_cond_id = get_function_blocks_id(start, blocks_dict)
+            list_loop.extend(list_cond_id)
+            list_loop.append("END_CONDITION")
+            if block_value["opcode"] == "control_if_else":
+                    start = block_value["inputs"]["SUBSTACK2"][1]
+                    if start != None:
+                        list_blocks2_id = get_function_blocks_id(start, blocks_dict)
+                        list_loop.extend(list_blocks2_id)
+                    list_loop.append("END_LOOP_CONDITIONAL")
+        else:
+            list_loop.append("END_LOOP")
+        return list_loop
+    except KeyError:
+        return list_loop
 
 class DuplicateScripts():
     """
@@ -93,7 +162,6 @@ class DuplicateScripts():
 
     def analyze(self, filename, json_project):
         """Start parsering it"""
-        #json_project = obtaining_json(filename)
         scripts_dict = {}
         ignoreblock_list = blocks2ignore()
         custom_dict = {}
@@ -186,9 +254,10 @@ class DuplicateScripts():
         self.customblocks_info = {}
         self.customblocks_info = {"name": filename.split(".")[0], "custom_blocks": list_customblocks_sprite, "n_custom_blocks": self.count_definitions,
                 "n_custom_blocks_calls": self.count_calls}
+    
 
     def search_next(self, block_list, block_id):
-
+        """Finds next"""
         block = self.blocks_dict[block_id]
         block_list.append(block_id)
         if block["next"] == None:
@@ -231,7 +300,6 @@ class DuplicateScripts():
         with open(filename.replace('.json', '') + '-customblocksinfo.json',
                   'w') as outfile:
             json.dump(self.customblocks_info, outfile)
-
         count = sum([len(listElem) for listElem in self.intra_dups_list])
         count = len(self.intra_dups_list)
         result = ("\n{} intra-sprite duplicate scripts found\n".format(count))
@@ -241,97 +309,28 @@ class DuplicateScripts():
         result += (str(self.count_calls) + " custom blocks calls found\n")
         return result
 
-def get_function_blocks_id(start, block_dict):
-    """Get the block_ids inside loops"""
-    list_blocks_id = []
-    list_blocks_id.append(start)
-    next_block_id = block_dict[start]["next"]
-    if next_block_id == None: # CASE: there is only a single block inside a loop or to list a condition
-        next_block = None
-    else:
-        next_block = block_dict[next_block_id]
-    while next_block != None:
-        list_blocks_id.append(next_block_id)
-        if block_dict[next_block_id]["next"] != None:
-            next_block_id = block_dict[next_block_id]["next"]
-            next_block = block_dict[next_block_id]
-        else:
-            next_block = None
-    return list_blocks_id
-
-def get_function_blocks_opcode(start, block_dict):
-    list_blocks = []
-    begin = block_dict[block_dict[start]["next"]]
-    while begin != None:
-        list_blocks.append(begin["opcode"])
-        if begin["next"] != None:
-            begin = block_dict[begin["next"]]
-        else:
-            begin = None
-    return list_blocks
-
-def getcustominfo(block, custom_dict, sprite, block_dict):
-    try:
-        list_function_blocks = get_function_blocks_opcode(block["parent"], block_dict)
-        custom_dict[sprite].append({"type": "procedures_prototype", "name": block["mutation"]["proccode"],
-                "argument_names":block["mutation"]["argumentnames"],
-                "argument_ids": block["mutation"]["argumentids"],
-                "blocks": list_function_blocks,
-                "n_calls": 0})
-    except KeyError:
-        # COMENTARLE A GREGORIO QUE HAY CASOS EN LOS QUE NO EXISTE EL PARENT
-        pass
-
-def getloop_ids(block_value, blocks_dict, block_id):
-    try: # Esto porque hay casos en los que no tiene SUBSTACK, Ni SUBSTACK2.. no entiendo por qué
-        list_loop = []
-        list_loop.append(block_id)
-        start = block_value["inputs"]["SUBSTACK"][1]
-        list_loop.append(block_id)
-        if start == None: # In case a loop does not have anything inside.
-            return list_loop
-        list_blocks_id = get_function_blocks_id(start, blocks_dict)
-        list_loop.extend(list_blocks_id)
-        if block_value["opcode"] in CONDITIONALS:
-            list_loop.append("END_LOOP")
-            start = block_value["inputs"]["CONDITION"][1]
-            list_cond_id = get_function_blocks_id(start, blocks_dict)
-            list_loop.extend(list_cond_id)
-            list_loop.append("END_CONDITION")
-            if block_value["opcode"] == "control_if_else":
-                    start = block_value["inputs"]["SUBSTACK2"][1]
-                    if start != None:
-                        list_blocks2_id = get_function_blocks_id(start, blocks_dict)
-                        list_loop.extend(list_blocks2_id)
-                    list_loop.append("END_LOOP_CONDITIONAL")
-        else:
-            list_loop.append("END_LOOP")
-        return list_loop
-    except KeyError:
-        return list_loop
+def define_duplicates(filename, json_file, ignoring):
+    """
+    Defines DuplicateScripts class and gives feedback
+    on how many duplicates scripts are.
+    """
+    duplicate = DuplicateScripts(ignoring)
+    print("Looking for duplicate scripts in", filename)
+    print()
+    duplicate.analyze(filename, json_file)
+    print("Minimum number of blocks:", N_BLOCKS)
+    print(duplicate.finalize(filename))
 
 def main(filename, ignoring):
-    """The entrypoint for the 'duplicateScripts' extension"""
+    """Main function of my script"""
     json_project = obtaining_json(filename)
     if filename.endswith('.zip'):
-        print("HAGO MUCHOS")
+        print("HAGO VARIOS")
         for i in json_project:
-            print(i)
-            filename = i
             json_file = json.loads(open(i).read())
-            duplicate = DuplicateScripts(ignoring)
-            print("Looking for duplicate scripts in", filename)
-            print()
-            duplicate.analyze(filename, json_file)
-            print("Minimum number of blocks:", N_BLOCKS)
-            print(duplicate.finalize(filename))
+            define_duplicates(i, json_file, ignoring)
     else:
-        duplicate = DuplicateScripts(ignoring)
-        print("Looking for duplicate scripts in", filename)
-        print()
-        duplicate.analyze(filename, json_project)
-        print("Minimum number of blocks:", N_BLOCKS)
-        print(duplicate.finalize(filename))
+        define_duplicates(filename, json_project, ignoring)
 
 if __name__ == "__main__":
     try:
