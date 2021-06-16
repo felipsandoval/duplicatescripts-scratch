@@ -7,24 +7,10 @@ import statistics
 import cluster
 import most_frequent_blocks
 import sys
-from os import walk
 from datetime import datetime
 import shutil
 import json
 import zipfile
-import os
-
-#startTime = datetime.now()
-
-#print(datetime.now() - startTime)
-
-#mypath = sys.argv[1]
-#_, _, filenames = next(walk(mypath))
-#for filename in filenames:
-#    duplicateScripts.main(mypath + filename)
-    #statistics.main(filename + "-intra.json")
-    #statistics.main(filename + "-project.json")
-#    cluster.main(mypath + filename.replace(".json", "") + "-project.json")
 
 
 def sb3_json_extraction(fileIn):
@@ -40,21 +26,25 @@ def sb3_json_extraction(fileIn):
     for fileName in listOfFileNames:
         if fileName.endswith('.json'):
             json_file = zip_file.extract(fileName)
-            json_file = json_file.split("/")[-1]
-    json_project = json_file
-    os.remove(fileOut)
+    json_project = json.loads(open(json_file).read())
+    # os.remove(fileOut)
     return json_project
 
 def obtaining_json(filename):
-    """Obtains JSON"""
+    """Obtains JSON file from different extentions"""
     try:
+        json_files_list = []
         if filename.endswith(".zip"):
+            # Creates a list with all JSON filenames
             zip_file = zipfile.ZipFile(filename, "r")
-            # Aquí hay que hacer el caso en el que sean VARIOS archivos JSON.
-            json_file = "project.json"
+            listOfFileNames = zip_file.namelist()
+            for file in listOfFileNames:
+                if file.endswith('.json'):
+                   # zip_file.extract(file)
+                    json_files_list.append(file)
+            return json_files_list
         elif filename.endswith(".json"):
-            json_file = filename
-            return json_file
+            json_file = json.loads(open(filename).read())
         elif filename.endswith(".sb3"):
             json_file = sb3_json_extraction(filename)
     except FileNotFoundError:
@@ -63,6 +53,18 @@ def obtaining_json(filename):
         sys.exit("\nPlease, use a valid extension file like .SB3," +
         " JSON or .ZIP\n")
     return json_file
+
+def define_duplicates(filename, json_file, ignoring):
+    """
+    Defines DuplicateScripts class and gives feedback
+    on how many duplicates scripts are.
+    """
+    duplicate = DuplicateScripts(ignoring)
+    print("Looking for duplicate scripts in", filename)
+    print()
+    duplicate.analyze(filename, json_file)
+    print("Minimum number of blocks:", N_BLOCKS)
+    print(duplicate.finalize(filename))
 
 def main(filename, ignoring):
     """MAIN PROGRAM"""
@@ -94,8 +96,7 @@ if __name__ == "__main__":
         sys.exit("\nUsage: python3 duplicateScriptsApprox.py" +
                  " <file(.SB3 or .JSON or .ZIP)> [-i]\n" +
                  "\n-i (OPTIONAL): Ignore blocks from IgnoreBlocks.txt\n")
-    # except TypeError:
-    #   sys.exit("\nPlease, use a valid extension file like .SB3," +
-    #   " JSON or .ZIP\n")
+    except FileNotFoundError:
+        sys.exit("\nPlease, use a file that exists in directory\n")
     except:
         sys.exit("\nSomething unexpected happened: ", sys.exc_info()[0])

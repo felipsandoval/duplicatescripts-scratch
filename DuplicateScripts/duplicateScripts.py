@@ -98,6 +98,7 @@ def get_function_blocks_id(start, block_dict):
     return list_blocks_id
 
 def get_function_blocks_opcode(start, block_dict):
+    """Get the opcode value"""
     list_blocks = []
     begin = block_dict[block_dict[start]["next"]]
     while begin != None:
@@ -108,7 +109,7 @@ def get_function_blocks_opcode(start, block_dict):
             begin = None
     return list_blocks
 
-def getcustominfo(block, custom_dict, sprite, block_dict):
+def get_custominfo(block, custom_dict, sprite, block_dict):
     try:
         list_function_blocks = get_function_blocks_opcode(block["parent"], block_dict)
         custom_dict[sprite].append({"type": "procedures_prototype", "name": block["mutation"]["proccode"],
@@ -119,6 +120,16 @@ def getcustominfo(block, custom_dict, sprite, block_dict):
     except KeyError:
         # COMENTARLE A GREGORIO QUE HAY CASOS EN LOS QUE NO EXISTE EL PARENT
         pass
+
+def change_blockid2opcode(scripts_dict, sprite, opcode_dict, ignoreblock_list, ignore):
+    for block in scripts_dict[sprite]:
+        for j in range(len(block)):
+            if block[j] not in CONTROL_MARKS:
+                block[j] = opcode_dict[block[j]]
+            if ignore:
+                if block[j] in ignoreblock_list and block[j] not in CONTROL_MARKS:
+                    #print("entré en un block que se tiene que ignorar")
+                    block[j] = "IGNORED BLOCK, should delete"
 
 def getloop_ids(block_value, blocks_dict, block_id):
     try: # Esto porque hay casos en los que no tiene SUBSTACK, Ni SUBSTACK2.. no entiendo por qué
@@ -199,7 +210,7 @@ class DuplicateScripts():
                     except KeyError:
                         loops_dict["loopistop"] = loop_list
                 if block["opcode"] == "procedures_prototype":
-                    getcustominfo(block, custom_dict, sprite, self.blocks_dict)
+                    get_custominfo(block, custom_dict, sprite, self.blocks_dict)
                     self.count_definitions += 1
                 elif block["opcode"] == "procedures_call":
                     list_calls.append({"type": "procedures_call", "name": block["mutation"]["proccode"],
@@ -222,39 +233,34 @@ class DuplicateScripts():
                 existloop = False
                 self.addloopblock(loops_dict, scripts_dict, sprite)
 
-            #CAMBIANDO VALOR DE BLOCK_ID POR OPCODE. FUNCIONA CON CONTROL_REPEAT
-            for block in scripts_dict[sprite]:
-                for j in range(len(block)):
-                    if block[j] not in CONTROL_MARKS:
-                        block[j] = opcode_dict[block[j]]
-                    if self.ignoringisactive:
-                        if block[j] in ignoreblock_list and block[j] not in CONTROL_MARKS:
-                            print("entré en un block que se tiene que ignorar")
-                            block[j] = "IGNORED BLOCK, should delete"
-
+            change_blockid2opcode(scripts_dict, sprite, opcode_dict, ignoreblock_list, self.ignoringisactive)
             #print(custom_dict[sprite])
         #print(scripts_dict)
 
-        # Intra-sprite
+        self.get_dup_intra_sprite(scripts_dict)
+        self.get_dup_project_wide(scripts_dict)
+        #self.get_customblocks_info()
+        # Custom Blocks information
+        self.customblocks_info = {}
+        self.customblocks_info = {"name": filename.split(".")[0], "custom_blocks": list_customblocks_sprite, "n_custom_blocks": self.count_definitions,
+                "n_custom_blocks_calls": self.count_calls}
+    
+    def get_dup_intra_sprite(self, scripts_dict):
+        """Finds intra-sprite duplication"""
         self.intra_dups_list = []
         for sprite in scripts_dict:
             blocks = scripts_dict[sprite]
             dups = find_dups(blocks)
             if dups:
                 self.intra_dups_list.append(dups[0])
-
-        # Project-wide
+    
+    def get_dup_project_wide(self, scripts_dict):
+        """Finds project-wide duplication"""
         self.project_dups_list = []
         blocks = []
         for sprite in scripts_dict:
             blocks += scripts_dict[sprite]
         self.project_dups_list = find_dups(blocks)
-
-        # Custom Blocks information
-        self.customblocks_info = {}
-        self.customblocks_info = {"name": filename.split(".")[0], "custom_blocks": list_customblocks_sprite, "n_custom_blocks": self.count_definitions,
-                "n_custom_blocks_calls": self.count_calls}
-    
 
     def search_next(self, block_list, block_id):
         """Finds next"""
@@ -309,7 +315,7 @@ class DuplicateScripts():
         result += (str(self.count_calls) + " custom blocks calls found\n")
         return result
 
-def define_duplicates(filename, json_file, ignoring):
+def iniciate_duplicates(filename, json_file, ignoring):
     """
     Defines DuplicateScripts class and gives feedback
     on how many duplicates scripts are.
@@ -328,9 +334,9 @@ def main(filename, ignoring):
         print("HAGO VARIOS")
         for i in json_project:
             json_file = json.loads(open(i).read())
-            define_duplicates(i, json_file, ignoring)
+            iniciate_duplicates(i, json_file, ignoring)
     else:
-        define_duplicates(filename, json_project, ignoring)
+        iniciate_duplicates(filename, json_project, ignoring)
 
 if __name__ == "__main__":
     try:
