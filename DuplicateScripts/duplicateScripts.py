@@ -22,7 +22,7 @@ def find_dups(blocks):
     return_list = []
     for i in range(len(blocks)):
         for j in range(i + 1, len(blocks)):
-            s = SequenceMatcher(None, blocks[i], blocks[j]) 
+            s = SequenceMatcher(None, blocks[i], blocks[j])
             match = s.find_longest_match(0, len(blocks[i]), 0, len(blocks[j]))
             if match.size >= N_BLOCKS:
                 return_list.append(blocks[i][match.a:match.a + match.size])
@@ -84,7 +84,8 @@ def get_function_blocks_id(start, block_dict):
     list_blocks_id = []
     list_blocks_id.append(start)
     next_block_id = block_dict[start]["next"]
-    if next_block_id == None: # CASE: there is only a single block inside a loop or to list a condition
+    # CASE: there is only a single block inside a loop or to list a condition
+    if next_block_id == None:
         next_block = None
     else:
         next_block = block_dict[next_block_id]
@@ -110,12 +111,14 @@ def get_function_blocks_opcode(start, block_dict):
     return list_blocks
 
 def get_custominfo(block, custom_dict, sprite, block_dict):
+    """Extract information from custom blocks"""
     try:
-        list_function_blocks = get_function_blocks_opcode(block["parent"], block_dict)
-        custom_dict[sprite].append({"type": "procedures_prototype", "name": block["mutation"]["proccode"],
+        list_blocks = get_function_blocks_opcode(block["parent"], block_dict)
+        custom_dict[sprite].append({"type": "procedures_prototype",
+                "name": block["mutation"]["proccode"],
                 "argument_names":block["mutation"]["argumentnames"],
                 "argument_ids": block["mutation"]["argumentids"],
-                "blocks": list_function_blocks,
+                "blocks": list_blocks,
                 "n_calls": 0})
     except KeyError:
         # COMENTARLE A GREGORIO QUE HAY CASOS EN LOS QUE NO EXISTE EL PARENT
@@ -148,11 +151,11 @@ def getloop_ids(block_value, blocks_dict, block_id):
             list_loop.extend(list_cond_id)
             list_loop.append("END_CONDITION")
             if block_value["opcode"] == "control_if_else":
-                    start = block_value["inputs"]["SUBSTACK2"][1]
-                    if start != None:
-                        list_blocks2_id = get_function_blocks_id(start, blocks_dict)
-                        list_loop.extend(list_blocks2_id)
-                    list_loop.append("END_LOOP_CONDITIONAL")
+                start = block_value["inputs"]["SUBSTACK2"][1]
+                if start != None:
+                    list_blocks2_id = get_function_blocks_id(start, blocks_dict)
+                    list_loop.extend(list_blocks2_id)
+                list_loop.append("END_LOOP_CONDITIONAL")
         else:
             list_loop.append("END_LOOP")
         return list_loop
@@ -213,7 +216,8 @@ class DuplicateScripts():
                     get_custominfo(block, custom_dict, sprite, self.blocks_dict)
                     self.count_definitions += 1
                 elif block["opcode"] == "procedures_call":
-                    list_calls.append({"type": "procedures_call", "name": block["mutation"]["proccode"],
+                    list_calls.append({"type": "procedures_call",
+                        "name": block["mutation"]["proccode"],
                         "argument_ids":block["mutation"]["argumentids"]})
                     self.count_calls += 1
                     for call in list_calls:
@@ -233,7 +237,8 @@ class DuplicateScripts():
                 existloop = False
                 self.addloopblock(loops_dict, scripts_dict, sprite)
 
-            change_blockid2opcode(scripts_dict, sprite, opcode_dict, ignoreblock_list, self.ignoringisactive)
+            change_blockid2opcode(scripts_dict, sprite, opcode_dict,
+                                  ignoreblock_list, self.ignoringisactive)
             #print(custom_dict[sprite])
         #print(scripts_dict)
 
@@ -242,8 +247,8 @@ class DuplicateScripts():
         #self.get_customblocks_info()
         # Custom Blocks information
         self.customblocks_info = {}
-        self.customblocks_info = {"name": filename.split(".")[0], "custom_blocks": list_customblocks_sprite, "n_custom_blocks": self.count_definitions,
-                "n_custom_blocks_calls": self.count_calls}
+        self.customblocks_info = {"name": filename.split(".")[0], "custom_blocks": list_customblocks_sprite,
+                "n_custom_blocks": self.count_definitions, "n_custom_blocks_calls": self.count_calls}
     
     def get_dup_intra_sprite(self, scripts_dict):
         """Finds intra-sprite duplication"""
@@ -331,7 +336,7 @@ def main(filename, ignoring):
     """Main function of my script"""
     json_project = obtaining_json(filename)
     if filename.endswith('.zip'):
-        print("HAGO VARIOS")
+        print("HAGO VARIOS o uno")
         for i in json_project:
             json_file = json.loads(open(i).read())
             iniciate_duplicates(i, json_file, ignoring)
