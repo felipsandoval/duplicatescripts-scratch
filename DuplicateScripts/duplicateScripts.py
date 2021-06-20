@@ -64,7 +64,6 @@ def sb3_json_extraction(file_in):
 def obtaining_json(filename):
     """Obtains JSON file from different extentions"""
     try:
-        print("aqui")
         json_files_list = []
         if filename.endswith(".zip"):
             # Creates a list with all JSON filenames
@@ -186,16 +185,14 @@ class DuplicateScripts():
     def __init__(self, ignoring):
         self.ignoringisactive = ignoring
         self.toplevel_list = []
-        self.blocks_dict = {}  # block id -> block value
         self.count_definitions = 0
         self.count_calls = 0
         self.customb_info = {}
-        self.intra_dups_list = []
-        self.project_dups_list = []
 
 
     def analyze(self, filename, json_project):
         """Start parsering it"""
+        self.blocks_dict = {}  # block id -> block value
         scripts_dict = {}
         ignoreblock_list = blocks2ignore()
         custom_dict = {}
@@ -272,6 +269,7 @@ class DuplicateScripts():
 
     def get_dup_intra_sprite(self, scripts_dict):
         """Finds intra-sprite duplication"""
+        self.intra_dups_list = []
         for sprite in scripts_dict:
             blocks = scripts_dict[sprite]
             dups = find_dups(blocks)
@@ -280,6 +278,7 @@ class DuplicateScripts():
 
     def get_dup_project_wide(self, scripts_dict):
         """Finds project-wide duplication"""
+        self.project_dups_list = []
         blocks = []
         for sprite in scripts_dict:
             blocks += scripts_dict[sprite]
