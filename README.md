@@ -17,3 +17,15 @@ python3 program.py <fichero(.SB3 o .JSON o .ZIP)> [-i]
 Duplicate Scripts: CLONE AND ABSTRACTION ANALYSIS ON SCRATCH PROJECTS
 =============
 <br>
+
+As evidenced in the scientific literature, Scratch projects do extensive use of cloning (i.e. copy and paste). This can be a limitation in developing skills such as abstraction, as there are elements, such as block definitions, that are much better.
+
+The program aims to extract data from code in Scratch projects to analyze its duplicity across. 
+
+Given the JSON file within Scratch file formats (.SB3), the goal is to choose and collect the relevant attributes of each Sprite, process this information with a clustering algorithm, and give statistical and informative feedback on both intra-sprite and project-level duplicity.
+
+### USAGE
+
+python3 program.py <file(.SB3 or .JSON or .ZIP)> [-i]
+
+-i (OPTIONAL): Ignores blocks opcodes specified in IgnoreBlocks.txt
