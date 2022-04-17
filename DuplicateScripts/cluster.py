@@ -2,15 +2,10 @@
 from collections import Counter
 from statistics import json2dna
 import sys
-import subprocess
-import sys
-from pip._internal import main as pip
+import distance
+import numpy as np
 import sklearn
 from sklearn.cluster import AffinityPropagation
-
-
-def install(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 def main (filename):
     (scripts, blocks_dict) = json2dna(filename)
