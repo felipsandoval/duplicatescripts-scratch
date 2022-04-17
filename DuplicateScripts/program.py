@@ -82,7 +82,6 @@ def main(filename, ignoring):
     print("\n-- CLUSTER SCRIPT --\n")
     cluster.main(filename)
 
-
 if __name__ == "__main__":
     try:
         if len(sys.argv) == 2:

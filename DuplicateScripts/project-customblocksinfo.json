@@ -1,0 +1,24 @@
+{
+    "name": "project",
+    "custom_blocks": [
+        {
+            "Stage": [],
+            "Objeto1": [
+                {
+                    "type": "procedures_prototype",
+                    "name": "ahloha",
+                    "argument_names": "[]",
+                    "argument_ids": "[]",
+                    "blocks": [
+                        "looks_think",
+                        "sound_changeeffectby",
+                        "motion_goto"
+                    ],
+                    "n_calls": 1
+                }
+            ]
+        }
+    ],
+    "n_custom_blocks": 1,
+    "n_custom_blocks_calls": 1
+}

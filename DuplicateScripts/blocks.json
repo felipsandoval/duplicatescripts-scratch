@@ -1,0 +1,15 @@
+{
+    "motion_gotoxy": "a",
+    "event_whenkeypressed": "b",
+    "motion_changexby": "c",
+    "motion_pointindirection": "d",
+    "motion_setx": "e",
+    "motion_changeyby": "f",
+    "motion_sety": "g",
+    "looks_sayforsecs": "h",
+    "event_whenflagclicked": "i",
+    "control_repeat": "j",
+    "looks_say": "k",
+    "motion_movesteps": "l",
+    "looks_think": "m"
+}

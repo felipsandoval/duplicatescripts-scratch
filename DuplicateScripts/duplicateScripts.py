@@ -175,6 +175,38 @@ def getloop_ids(block_value, blocks_dict, block_id):
     except KeyError:
         return list_loop
 
+def checkif_loop(block, blocks_dict, block_id, loops_dict, existloop):
+    if block["opcode"] in LOOP_BLOCKS:
+    existloop = True
+    loop_list = getloop_ids(block, blocks_dict, block_id)
+        try:
+            if block["parent"] is not None:
+                loops_dict[block["parent"]] = loop_list
+            else:
+                loops_dict["loopistop"] = loop_list
+        except KeyError:
+            loops_dict["loopistop"] = loop_list
+    return loops_dict
+
+def checkif_conditional(block, custom_dict, sprite, blocks_dict, list_calls, count_definitions, list_customb, count_calls):
+    if block["opcode"] == "procedures_prototype":
+        get_custominfo(block, custom_dict, sprite, blocks_dict)
+        count_definitions += 1
+    elif block["opcode"] == "procedures_call":
+        list_calls.append({"type": "procedures_call",
+                            "name": block["mutation"]["proccode"],
+                            "argument_ids": block["mutation"]["argumentids"]})
+        self.count_calls += 1
+        for call in list_calls:
+                # print(call)
+            for procedure in custom_dict[sprite]:
+                # print(procedure)
+                if procedure["name"] == call["name"] and procedure["type"] == "procedures_prototype":
+                    procedure["n_calls"] = procedure["n_calls"] + 1
+        # custom_dict[sprite] += list_calls # ESTO FALLA WTF
+        list_customb.append(custom_dict)
+    return count_definitions, count_calls
+
 
 class DuplicateScripts():
     """
@@ -220,7 +252,6 @@ class DuplicateScripts():
                 if block["opcode"] in LOOP_BLOCKS:
                     existloop = True
                     loop_list = getloop_ids(block, self.blocks_dict, block_id)
-                    # print(block)
                     try:
                         if block["parent"] is not None:
                             loops_dict[block["parent"]] = loop_list

@@ -6,24 +6,8 @@ import subprocess
 import sys
 from pip._internal import main as pip
 import sklearn
-try:
-    import numpy as np
-except ImportError:
-    pip(['install', '--user', 'numpy'])
-    import numpy as np
-try:
-    import distance
-except ImportError:
-    pip(['install', '--user', 'distance'])
-    import distance
-try:
-    from sklearn.cluster import AffinityPropagation
-except ImportError:
-    pip(['install', '--user', 'scikit-learn'])
-    pip(['install', '--user', 'sklearn.cluster'])
-    pip(['install', '--user', 'spicy'])
-    pip(['install', '--user', 'matplotlib'])
-    from sklearn.cluster import AffinityPropagation
+from sklearn.cluster import AffinityPropagation
+
 
 def install(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
