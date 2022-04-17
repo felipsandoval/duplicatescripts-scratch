@@ -177,8 +177,8 @@ def getloop_ids(block_value, blocks_dict, block_id):
 
 def checkif_loop(block, blocks_dict, block_id, loops_dict, existloop):
     if block["opcode"] in LOOP_BLOCKS:
-    existloop = True
-    loop_list = getloop_ids(block, blocks_dict, block_id)
+        existloop = True
+        loop_list = getloop_ids(block, blocks_dict, block_id)
         try:
             if block["parent"] is not None:
                 loops_dict[block["parent"]] = loop_list
