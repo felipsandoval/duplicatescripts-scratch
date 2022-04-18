@@ -221,7 +221,6 @@ class DuplicateScripts():
         self.count_calls = 0
         self.customb_info = {}
 
-
     def analyze(self, filename, json_project):
         """Start parsering it"""
         self.blocks_dict = {}  # block id -> block value
@@ -231,7 +230,7 @@ class DuplicateScripts():
         list_calls = []
         list_customb = []
 
-        # Loops through all sprites (and canva "sprite" too)
+        # Loops through all sprites (and canva/Stage "sprite" too)
         for sprites_dict in json_project["targets"]:
             sprite = sprites_dict["name"]
             scripts_dict[sprite] = []
@@ -394,7 +393,7 @@ def main(filename, ignoring):
     else:
         iniciate_duplicates(filename, json_project, ignoring)
 
-
+# Esto se puede borrar luego. 
 if __name__ == "__main__":
     try:
         if len(sys.argv) == 2:
