@@ -1,6 +1,16 @@
 {
-    "event_whenkeypressed": "a",
-    "motion_movesteps": "b",
-    "looks_switchcostumeto": "c",
-    "looks_costume": "d"
+    "looks_say": "a",
+    "looks_thinkforsecs": "b",
+    "motion_turnleft": "c",
+    "control_repeat": "d",
+    "sound_changevolumeby": "e",
+    "sensing_askandwait": "f",
+    "sound_cleareffects": "g",
+    "procedures_definition": "h",
+    "procedures_prototype": "i",
+    "procedures_call": "j",
+    "looks_think": "k",
+    "sound_changeeffectby": "l",
+    "motion_goto": "m",
+    "motion_goto_menu": "n"
 }

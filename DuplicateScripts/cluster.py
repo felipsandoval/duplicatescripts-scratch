@@ -31,5 +31,6 @@ def main (filename):
         print("%s -- *%s (%s):* %s" % (sum_all, exemplar, c[exemplar], cluster_str))
     print()
 
+# Esto se puede eliminar luego
 if __name__ == "__main__":
     main(sys.argv[1])

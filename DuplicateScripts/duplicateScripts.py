@@ -42,7 +42,7 @@ def blocks2ignore():
     file.close()
     return ignore_list
 
-
+# Esto se puede borrar ahora que se usa en program.py
 def sb3_json_extraction(file_in):
     """
     Will change the file extention to .zip from a given a .sb3,
@@ -60,7 +60,7 @@ def sb3_json_extraction(file_in):
     # os.remove(file_out)
     return json_project
 
-
+# Esto se puede borrar ahora que se usa en program.py
 def obtaining_json(filename):
     """Obtains JSON file from different extentions"""
     try:
@@ -382,7 +382,11 @@ def iniciate_duplicates(filename, json_file, ignoring):
     print(duplicate.finalize(filename))
 
 
-def main(filename, ignoring):
+def main(filename, json_file, ignoring):
+    """Main function of my script"""
+    iniciate_duplicates(filename, json_file, ignoring)
+
+def antiguo_main(filename, ignoring):
     """Main function of my script"""
     json_project = obtaining_json(filename)
     if filename.endswith('.zip'):
