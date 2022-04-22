@@ -386,6 +386,7 @@ def main(filename, json_file, ignoring):
     """Main function of my script"""
     iniciate_duplicates(filename, json_file, ignoring)
 
+# Esto se puede borrar luego. 
 def antiguo_main(filename, ignoring):
     """Main function of my script"""
     json_project = obtaining_json(filename)
