@@ -148,7 +148,7 @@ def change_blockid2opcode(scripts_dict, sprite, opcode_dict, ignoreblock_list, i
 
 def getloop_ids(block_value, blocks_dict, block_id):
     """Extract blockids from loops and conditional blocks"""
-    try:  # hay casos que no tiene SUBSTACK, Ni SUBSTACK2..
+    try:  # hay casos que no tiene SUBSTACK, Ni SUBSTACK2 VER..
         list_loop = []
         list_loop.append(block_id)
         start = block_value["inputs"]["SUBSTACK"][1]
@@ -244,10 +244,11 @@ class DuplicateScripts():
             opcode_dict = {}   # block id -> block opcode
             loop_list = []
             toplevel_list = []
-            existloop = False
+            existloop = False # VER SI ESTO TIENE SENTIDO QUE ESTÉ AQUÍ
 
             for block_id, block in self.blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
+                # Caso de Loops
                 if block["opcode"] in LOOP_BLOCKS:
                     existloop = True
                     loop_list = getloop_ids(block, self.blocks_dict, block_id)
@@ -258,6 +259,7 @@ class DuplicateScripts():
                             loops_dict["loopistop"] = loop_list
                     except KeyError:
                         loops_dict["loopistop"] = loop_list
+                # Caso de custom blocks
                 if block["opcode"] == "procedures_prototype":
                     get_custominfo(block, custom_dict, sprite, self.blocks_dict)
                     self.count_definitions += 1
@@ -274,6 +276,7 @@ class DuplicateScripts():
                                 procedure["n_calls"] = procedure["n_calls"] + 1
                     # custom_dict[sprite] += list_calls # ESTO FALLA WTF
                     list_customb.append(custom_dict)
+                # Caso de que sea el primero la función
                 if block["topLevel"]:
                     sucesive_list = self.search_next([], block_id)
                     scripts_dict[sprite].append(sucesive_list)
