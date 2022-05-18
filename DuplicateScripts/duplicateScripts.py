@@ -207,6 +207,17 @@ def checkif_conditional(block, custom_dict, sprite, blocks_dict, list_calls, cou
         list_customb.append(custom_dict)
     return count_definitions, count_calls
 
+def iniciate_duplicates(filename, json_file, ignoring):
+    """
+    Defines DuplicateScripts class and gives feedback
+    on how many duplicates scripts are.
+    """
+    duplicate = DuplicateScripts(ignoring)
+    print("Looking for duplicate scripts in", filename)
+    print()
+    duplicate.analyze(filename, json_file)
+    print("Minimum number of blocks:", N_BLOCKS)
+    print(duplicate.finalize(filename))
 
 class DuplicateScripts():
     """
@@ -370,19 +381,6 @@ class DuplicateScripts():
         result += (str(self.count_definitions) + " custom blocks found\n")
         result += (str(self.count_calls) + " custom blocks calls found\n")
         return result
-
-
-def iniciate_duplicates(filename, json_file, ignoring):
-    """
-    Defines DuplicateScripts class and gives feedback
-    on how many duplicates scripts are.
-    """
-    duplicate = DuplicateScripts(ignoring)
-    print("Looking for duplicate scripts in", filename)
-    print()
-    duplicate.analyze(filename, json_file)
-    print("Minimum number of blocks:", N_BLOCKS)
-    print(duplicate.finalize(filename))
 
 
 def main(filename, json_file, ignoring):
