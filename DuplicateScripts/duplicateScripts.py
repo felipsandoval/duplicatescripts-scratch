@@ -87,11 +87,11 @@ def obtaining_json(filename):
 
 
 def get_function_blocks_id(start, block_dict):
-    """Get the block_ids inside loops"""
+    """Get the block_ids inside a block (works for loops)"""
     list_blocks_id = []
     list_blocks_id.append(start)
     next_block_id = block_dict[start]["next"]
-    # CASE: there is only a single block inside a loop or to list a condition
+    # SPECIAL CASE: there is only a single block inside a loop or to list a condition
     if next_block_id is None:
         next_block = None
     else:
@@ -148,18 +148,18 @@ def change_blockid2opcode(scripts_dict, sprite, opcode_dict, ignoreblock_list, i
 
 def getloop_ids(block_value, blocks_dict, block_id):
     """Extract blockids from loops and conditional blocks"""
-    try:  # hay casos que no tiene SUBSTACK, Ni SUBSTACK2 VER..
+    try: 
         list_loop = []
         list_loop.append(block_id)
-        start = block_value["inputs"]["SUBSTACK"][1]
+        start = block_value["inputs"]["SUBSTACK"][1] # What happens if a loop does not have inputs nor substack value ?
         list_loop.append(block_id)
         if start is None:  # In case a loop does not have anything inside.
             return list_loop
         list_blocks_id = get_function_blocks_id(start, blocks_dict)
         list_loop.extend(list_blocks_id)
+        list_loop.append("END_LOOP")
         if block_value["opcode"] in CONDITIONALS:
-            list_loop.append("END_LOOP")
-            start = block_value["inputs"]["CONDITION"][1]
+            start = block_value["inputs"]["CONDITION"][1] # ESTO SEGURO QUE ESTÁ MAL
             list_cond_id = get_function_blocks_id(start, blocks_dict)
             list_loop.extend(list_cond_id)
             list_loop.append("END_CONDITION")
@@ -172,7 +172,7 @@ def getloop_ids(block_value, blocks_dict, block_id):
         else:
             list_loop.append("END_LOOP")
         return list_loop
-    except KeyError:
+    except KeyError: # What happens if a loop does not have insputs nor substack value
         return list_loop
 
 def checkif_loop(block, blocks_dict, block_id, loops_dict, existloop):
@@ -257,6 +257,7 @@ class DuplicateScripts():
             toplevel_list = []
             existloop = False # VER SI ESTO TIENE SENTIDO QUE ESTÉ AQUÍ
 
+            # Loops through all blocks within each sprite
             for block_id, block in self.blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
                 # Caso de Loops
@@ -267,6 +268,7 @@ class DuplicateScripts():
                         if block["parent"] is not None:
                             loops_dict[block["parent"]] = loop_list
                         else:
+                            # Este opcode del loop es parent
                             loops_dict["loopistop"] = loop_list
                     except KeyError:
                         loops_dict["loopistop"] = loop_list
