@@ -159,18 +159,21 @@ def getloop_ids(block_value, blocks_dict, block_id):
         list_loop.extend(list_blocks_id)
         list_loop.append("END_LOOP")
         if block_value["opcode"] in CONDITIONALS:
-            start = block_value["inputs"]["CONDITION"][1] # ESTO SEGURO QUE ESTÁ MAL
-            list_cond_id = get_function_blocks_id(start, blocks_dict)
-            list_loop.extend(list_cond_id)
-            list_loop.append("END_CONDITION")
+            #start = block_value["inputs"]["CONDITION"][1] # ESTO SEGURO QUE ESTÁ MAL
+            #list_cond_id = get_function_blocks_id(start, blocks_dict)
+            #list_loop.extend(list_cond_id)
+            #list_loop.append("END_CONDITION")
             if block_value["opcode"] == "control_if_else":
                 start = block_value["inputs"]["SUBSTACK2"][1]
                 if start is not None:
                     list_blocks2_id = get_function_blocks_id(start, blocks_dict)
                     list_loop.extend(list_blocks2_id)
                 list_loop.append("END_LOOP_CONDITIONAL")
-        else:
-            list_loop.append("END_LOOP")
+            #else:
+                #start = block_value["inputs"]["CONDITION"][1] # ESTO SEGURO QUE ESTÁ MAL
+                #list_cond_id = get_function_blocks_id(start, blocks_dict)
+                #list_loop.extend(list_cond_id)
+                #list_loop.append("END_CONDITION")
         return list_loop
     except KeyError: # What happens if a loop does not have insputs nor substack value
         return list_loop
