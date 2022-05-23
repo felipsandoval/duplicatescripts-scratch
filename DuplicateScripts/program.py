@@ -9,12 +9,11 @@ import cluster
 import most_frequent_blocks
 
 import sys
-from datetime import datetime
 import shutil
 import json
 import zipfile
 
-# Ver como se podría eliminar esta función. Es esencial para el tema del SB3
+
 def sb3_json_extraction(fileIn):
     """
     Will change the file extention to .zip from a given a .sb3,
@@ -32,7 +31,7 @@ def sb3_json_extraction(fileIn):
     # os.remove(fileOut) ver este tema en windows
     return json_project
 
-# Ver como se podría eliminar esta función. Es esencial para el tema del SB3
+
 def obtaining_json(filename):
     """Obtains JSON file from different extentions"""
     try:
@@ -57,18 +56,6 @@ def obtaining_json(filename):
                  " JSON or .ZIP\n")
     return json_file
 
-# VER ESTA FUNCIÓN Y QUE HACE
-def define_duplicates(filename, json_file, ignoring):
-    """
-    Defines DuplicateScripts class and gives feedback
-    on how many duplicates scripts are.
-    """
-    duplicate = DuplicateScripts(ignoring)
-    print("Looking for duplicate scripts in", filename)
-    print()
-    duplicate.analyze(filename, json_file)
-    print("Minimum number of blocks:", N_BLOCKS)
-    print(duplicate.finalize(filename))
 
 def main(filename, ignoring):
     """MAIN PROGRAM"""
@@ -105,6 +92,6 @@ if __name__ == "__main__":
                  " <file(.SB3 or .JSON or .ZIP)> [-i]\n" +
                  "\n-i (OPTIONAL): Ignore blocks from IgnoreBlocks.txt\n")
     except FileNotFoundError:
-        sys.exit("\nPlease, use a file that exists in directory\n")
+        sys.exit("\nPlease, use a file that exists in your current directory\n")
     #except:
     #    sys.exit("\nSomething unexpected happened: ", sys.exc_info()[0])

@@ -45,49 +45,6 @@ def blocks2ignore():
     file.close()
     return ignore_list
 
-# Esto se puede borrar ahora que se usa en program.py
-def sb3_json_extraction(file_in):
-    """
-    Will change the file extention to .zip from a given a .sb3,
-    then will return the .json file inside the Scratch project.
-    """
-    file_out = file_in.split(".")[0] + ".zip"
-    shutil.copyfile(file_in, file_out)
-    zip_file = zipfile.ZipFile(file_out, "r")
-    list_files_name = zip_file.namelist()
-    # Iterates over the file names to find .json
-    for filename in list_files_name:
-        if filename.endswith('.json'):
-            json_file = zip_file.extract(filename)
-    json_project = json.loads(open(json_file).read())
-    # os.remove(file_out)
-    return json_project
-
-# Esto se puede borrar ahora que se usa en program.py
-def obtaining_json(filename):
-    """Obtains JSON file from different extentions"""
-    try:
-        json_files_list = []
-        if filename.endswith(".zip"):
-            # Creates a list with all JSON filenames
-            zip_file = zipfile.ZipFile(filename, "r")
-            list_filenames = zip_file.namelist()
-            for file in list_filenames:
-                if file.endswith('.json'):
-                   # zip_file.extract(file)
-                    json_files_list.append(file)
-                return json_files_list
-        elif filename.endswith(".json"):
-            json_file = json.loads(open(filename).read())
-        elif filename.endswith(".sb3"):
-            json_file = sb3_json_extraction(filename)
-    except FileNotFoundError:
-        sys.exit("\nPlease, use a file that exists in directory\n")
-    except:
-        sys.exit("\nPlease, use a valid extension file like .SB3," +
-                 " JSON or .ZIP\n")
-    return json_file
-
 
 def get_function_blocks_id(start, block_dict):
     """Get the block_ids inside a block (works for loops)"""
@@ -181,6 +138,7 @@ def getloop_ids(block_value, blocks_dict, block_id):
     except KeyError: # What happens if a loop does not have insputs nor substack value
         return list_loop
 
+
 def checkif_loop(block, blocks_dict, block_id, loops_dict, existloop):
     if block["opcode"] in LOOP_BLOCKS:
         existloop = True
@@ -193,6 +151,7 @@ def checkif_loop(block, blocks_dict, block_id, loops_dict, existloop):
         except KeyError:
             loops_dict["loopistop"] = loop_list
     return loops_dict
+
 
 def checkif_conditional(block, custom_dict, sprite, blocks_dict, list_calls, count_definitions, list_customb, count_calls):
     if block["opcode"] == "procedures_prototype":
@@ -213,21 +172,10 @@ def checkif_conditional(block, custom_dict, sprite, blocks_dict, list_calls, cou
         list_customb.append(custom_dict)
     return count_definitions, count_calls
 
-def iniciate_duplicates(filename, json_file, ignoring):
-    """
-    Defines DuplicateScripts class and gives feedback
-    on how many duplicates scripts are.
-    """
-    duplicate = DuplicateScripts(ignoring)
-    print("Looking for duplicate scripts in", filename)
-    print()
-    duplicate.analyze(filename, json_file)
-    print("Minimum number of blocks:", N_BLOCKS)
-    print(duplicate.finalize(filename))
 
 class DuplicateScripts():
     """
-    Analyzer of duplicate scripts in sb3 projects
+    Analyzer of duplicate scripts within a .json
     New version for Scratch 3.0
     """
 
@@ -392,36 +340,15 @@ class DuplicateScripts():
 
 
 def main(filename, json_file, ignoring):
-    """Main function of my script"""
-    iniciate_duplicates(filename, json_file, ignoring)
-
-# Esto se puede borrar luego. 
-def antiguo_main(filename, ignoring):
-    """Main function of my script"""
-    json_project = obtaining_json(filename)
-    if filename.endswith('.zip'):
-        print("HAGO VARIOS o uno")
-        for i in json_project:
-            json_file = json.loads(open(i).read())
-            iniciate_duplicates(i, json_file, ignoring)
-    else:
-        iniciate_duplicates(filename, json_project, ignoring)
-
-# Esto se puede borrar luego. 
-if __name__ == "__main__":
-    try:
-        if len(sys.argv) == 2:
-            main(sys.argv[1], False)
-        elif len(sys.argv) == 3 and str(sys.argv[2]) == "-i":
-            print("\nYou are now ignoring blocks\n")
-            main(sys.argv[1], True)
-        else:
-            raise IndexError
-    except IndexError:
-        sys.exit("\nUsage: python3 duplicateScriptsApprox.py" +
-                 " <file(.SB3 or .JSON or .ZIP)> [-i]\n" +
-                 "\n-i (OPTIONAL): Ignore blocks from IgnoreBlocks.txt\n")
-    except FileNotFoundError:
-        sys.exit("\nPlease, use a file that exists in directory\n")
-    else:
-        sys.exit("\nSomething unexpected happened: ", sys.exc_info()[0])
+    """
+    Defines DuplicateScripts class and gives feedback
+    on how many duplicates scripts are.
+    """
+    duplicate = DuplicateScripts(ignoring)
+    print("\n-- STARTING DUPLICATESCRIPTS.PY --\n")
+    print("Looking for duplicate scripts in", filename)
+    print()
+    duplicate.analyze(filename, json_file)
+    print("Minimum number of blocks: ", N_BLOCKS)
+    print(duplicate.finalize(filename))
+    print("\n-- END OF DUPLICATESCRIPTS.PY --\n")
