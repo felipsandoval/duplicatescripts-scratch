@@ -11,7 +11,6 @@ import sys
 def json2dna(filename):
     """
     Given a JSON file as given in duplicateScriptsApprox.py
-
     returns the scripts as characters
     """
     scripts = []

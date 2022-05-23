@@ -331,8 +331,8 @@ class DuplicateScripts():
             json.dump(self.customb_info, outfile)
         count = sum([len(listElem) for listElem in self.intra_dups_list])
         count = len(self.intra_dups_list)
-        result = ("\n{} intra-sprite duplicate scripts found\n".format(count))
-        result += ("%d project-wide duplicate scripts found\n" %
+        result = ("\n{} intra-sprite duplicate blocks found\n".format(count))
+        result += ("%d project-wide duplicate blocks found\n" %
                    len(self.project_dups_list))
         result += (str(self.count_definitions) + " custom blocks found\n")
         result += (str(self.count_calls) + " custom blocks calls found\n")
@@ -345,10 +345,10 @@ def main(filename, json_file, ignoring):
     on how many duplicates scripts are.
     """
     duplicate = DuplicateScripts(ignoring)
-    print("\n-- STARTING DUPLICATESCRIPTS.PY --\n")
-    print("Looking for duplicate scripts in", filename)
+    print("\n-- STARTING DUPLICATESCRIPTS.PY SCRIPT --\n")
+    print("Looking for duplicate blocks in", filename)
     print()
     duplicate.analyze(filename, json_file)
     print("Minimum number of blocks: ", N_BLOCKS)
     print(duplicate.finalize(filename))
-    print("\n-- END OF DUPLICATESCRIPTS.PY --\n")
+    print("\n-- END OF DUPLICATESCRIPTS.PY SCRIPT --\n")

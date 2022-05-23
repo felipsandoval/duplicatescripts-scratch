@@ -59,24 +59,27 @@ def obtaining_json(filename):
 
 def main(filename, ignoring):
     """MAIN PROGRAM"""
-    print("\n-- STARTING ANALYSIS --\n")
+    print("\n*** STARTING ANALYSIS ***\n")
     json_project = obtaining_json(filename)
     if filename.endswith('.zip'):
         # Ahondar un poco más en casos donde se tengan que hacer un montón de ficheros
         for i in json_project:
             json_file = json.loads(open(i).read())
             duplicateScripts.main(filename, json_file, ignoring)
+            # Luego de esto debería hacer toda la continuación del código.
+            # Es decir: most frequent block, statistics, cluster.. etc
     else:
         duplicateScripts.main(filename, json_project, ignoring)
     most_frequent_blocks.main(json_project)
     spritefile = filename.replace('.json', '') + '-sprite.json'
     projectfile = filename.replace('.json', '') + '-project.json'
-    print("\n-- INTRA SPRITE STATISTICS --\n")
+    print("\n-- GETTING INTRA SPRITE STATISTICS --\n")
     statistics.main(spritefile)
-    print("\n-- INTRA PROJECT STATISTICS --\n")
+    print("\n-- GETTING INTRA PROJECT STATISTICS --\n")
     statistics.main(projectfile)
-    print("\n-- CLUSTER SCRIPT --\n")
+    print("\n-- STARTING CLUSTER.PY SCRIPT --\n")
     cluster.main(filename)
+    print("\n-- END OF CLUSTER.PY SCRIPT --\n")
 
 if __name__ == "__main__":
     try:
