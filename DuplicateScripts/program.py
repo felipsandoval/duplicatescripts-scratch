@@ -68,18 +68,28 @@ def main(filename, ignoring):
             duplicateScripts.main(filename, json_file, ignoring)
             # Luego de esto debería hacer toda la continuación del código.
             # Es decir: most frequent block, statistics, cluster.. etc
+            most_frequent_blocks.main(json_file)
+            spritefile = i.replace('.zip', '') + '-sprite.json'
+            projectfile = i.replace('.zip', '') + '-project.json'
+            print("\n-- GETTING INTRA SPRITE STATISTICS --\n")
+            statistics.main(spritefile)
+            print("\n-- GETTING INTRA PROJECT STATISTICS --\n")
+            statistics.main(projectfile)
+            print("\n-- STARTING CLUSTER.PY SCRIPT --\n")
+            cluster.main(i)
+            print("\n-- END OF CLUSTER.PY SCRIPT --\n")
     else:
         duplicateScripts.main(filename, json_project, ignoring)
-    most_frequent_blocks.main(json_project)
-    spritefile = filename.replace('.json', '') + '-sprite.json'
-    projectfile = filename.replace('.json', '') + '-project.json'
-    print("\n-- GETTING INTRA SPRITE STATISTICS --\n")
-    statistics.main(spritefile)
-    print("\n-- GETTING INTRA PROJECT STATISTICS --\n")
-    statistics.main(projectfile)
-    print("\n-- STARTING CLUSTER.PY SCRIPT --\n")
-    cluster.main(filename)
-    print("\n-- END OF CLUSTER.PY SCRIPT --\n")
+        most_frequent_blocks.main(json_project)
+        spritefile = filename.replace('.json', '') + '-sprite.json'
+        projectfile = filename.replace('.json', '') + '-project.json'
+        print("\n-- GETTING INTRA SPRITE STATISTICS --\n")
+        statistics.main(spritefile)
+        print("\n-- GETTING INTRA PROJECT STATISTICS --\n")
+        statistics.main(projectfile)
+        print("\n-- STARTING CLUSTER.PY SCRIPT --\n")
+        cluster.main(filename)
+        print("\n-- END OF CLUSTER.PY SCRIPT --\n")
 
 if __name__ == "__main__":
     try:

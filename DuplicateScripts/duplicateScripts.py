@@ -6,7 +6,7 @@ from difflib import SequenceMatcher
 import json
 # import os "Esto para limpiar" un poco las carpetas que se crean. Ver compatibilidad para Windows
 
-# Minimum number of blocks to be considerate duplicate 
+# Minimum number of blocks for a script to be considerate duplicate 
 N_BLOCKS = 6
 
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
@@ -228,7 +228,10 @@ class DuplicateScripts():
                             # Este opcode del loop es parent
                             loops_dict["loopistop"] = loop_list
                     except KeyError:
+                        # En casos que no existiese el valor de parent. SERIA MUY RARO.
+                        print("QUE RARO. NO TIENE EL VALUE DE PARENT ESTE ELEMENTO: ", block["opcode"])
                         loops_dict["loopistop"] = loop_list
+                
                 # Caso de custom blocks
                 if block["opcode"] == "procedures_prototype":
                     get_custominfo(block, custom_dict, sprite, self.blocks_dict)
@@ -246,6 +249,7 @@ class DuplicateScripts():
                                 procedure["n_calls"] = procedure["n_calls"] + 1
                     # custom_dict[sprite] += list_calls # ESTO FALLA WTF
                     list_customb.append(custom_dict)
+                
                 # Caso de que sea el primero la función
                 if block["topLevel"]:
                     sucesive_list = self.search_next([], block_id)
@@ -253,13 +257,12 @@ class DuplicateScripts():
                     toplevel_list.append(block_id)
 
             if existloop:
-                existloop = False
                 self.addloopblock(loops_dict, scripts_dict, sprite)
 
             change_blockid2opcode(scripts_dict, sprite, opcode_dict,
                                   ignoreblock_list, self.ignoringisactive)
             # print(custom_dict[sprite])
-        # print(scripts_dict)
+        print(scripts_dict)
 
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
@@ -334,8 +337,8 @@ class DuplicateScripts():
             json.dump(self.customb_info, outfile)
         count = sum([len(listElem) for listElem in self.intra_dups_list])
         count = len(self.intra_dups_list)
-        result = ("\n{} intra-sprite duplicate blocks found\n".format(count))
-        result += ("%d project-wide duplicate blocks found\n" %
+        result = ("\n{} intra-sprite duplicate scripts found\n".format(count))
+        result += ("%d project-wide duplicate scripts found\n" %
                    len(self.project_dups_list))
         result += (str(self.count_definitions) + " custom blocks found\n")
         result += (str(self.count_calls) + " custom blocks calls found\n")
