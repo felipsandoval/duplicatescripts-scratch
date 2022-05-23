@@ -4,9 +4,6 @@
 
 from difflib import SequenceMatcher
 import json
-import zipfile
-import sys
-import shutil
 # import os "Esto para limpiar" un poco las carpetas que se crean. Ver compatibilidad para Windows
 
 # Minimum number of blocks to be considerate duplicate 
@@ -46,24 +43,25 @@ def blocks2ignore():
     return ignore_list
 
 
-def get_function_blocks_id(start, block_dict):
-    """Get the block_ids inside a block (works for loops)"""
-    list_blocks_id = []
-    list_blocks_id.append(start)
-    next_block_id = block_dict[start]["next"]
+def get_blocks_in_loop(start, block_dict):
+    """Get the block_ids inside a loop"""
     # SPECIAL CASE: there is only a single block inside a loop or to list a condition
+    next_block_id = block_dict[start]["next"]
+    b_inside_loop = []
+    b_inside_loop.append(start)
     if next_block_id is None:
-        next_block = None
+        n_block = None
     else:
-        next_block = block_dict[next_block_id]
-    while next_block is not None:
-        list_blocks_id.append(next_block_id)
+        n_block = block_dict[next_block_id]
+    while n_block is not None:
+        b_inside_loop.append(next_block_id)
         if block_dict[next_block_id]["next"] is not None:
             next_block_id = block_dict[next_block_id]["next"]
-            next_block = block_dict[next_block_id]
+            n_block = block_dict[next_block_id]
         else:
-            next_block = None
-    return list_blocks_id
+            n_block = None
+    return b_inside_loop
+
 
 
 def get_function_blocks_opcode(start, block_dict):
@@ -109,34 +107,36 @@ def change_blockid2opcode(scripts_dict, sprite, opcode_dict, ignoreblock_list, i
 def getloop_ids(block_value, blocks_dict, block_id):
     """Extract blockids from loops and conditional blocks"""
     try: 
-        list_loop = []
-        list_loop.append(block_id)
-        start = block_value["inputs"]["SUBSTACK"][1] # What happens if a loop does not have inputs nor substack value ?
-        list_loop.append(block_id)
-        if start is None:  # In case a loop does not have anything inside.
-            return list_loop
-        list_blocks_id = get_function_blocks_id(start, blocks_dict)
-        list_loop.extend(list_blocks_id)
-        list_loop.append("END_LOOP")
+        loop_list = []
+        loop_list.append(block_id)
+        start = block_value["inputs"]["SUBSTACK"][1] # What happens if a loop does not have inputs nor substack value ? ALL OF THEM MUST HAVE THIS
+        if start is None:
+            return loop_list
+        b_inside_loop = get_blocks_in_loop(start, blocks_dict)
+        loop_list.extend(b_inside_loop)
+        loop_list.append("END_LOOP")
+
         if block_value["opcode"] in CONDITIONALS:
-            #start = block_value["inputs"]["CONDITION"][1] # ESTO SEGURO QUE ESTÁ MAL
-            #list_cond_id = get_function_blocks_id(start, blocks_dict)
-            #list_loop.extend(list_cond_id)
-            #list_loop.append("END_CONDITION")
             if block_value["opcode"] == "control_if_else":
                 start = block_value["inputs"]["SUBSTACK2"][1]
+                b_2_inside_loop = []
                 if start is not None:
-                    list_blocks2_id = get_function_blocks_id(start, blocks_dict)
-                    list_loop.extend(list_blocks2_id)
-                list_loop.append("END_LOOP_CONDITIONAL")
-            #else:
-                #start = block_value["inputs"]["CONDITION"][1] # ESTO SEGURO QUE ESTÁ MAL
-                #list_cond_id = get_function_blocks_id(start, blocks_dict)
-                #list_loop.extend(list_cond_id)
-                #list_loop.append("END_CONDITION")
-        return list_loop
-    except KeyError: # What happens if a loop does not have insputs nor substack value
-        return list_loop
+                    b_2_inside_loop = get_blocks_in_loop(start, blocks_dict)
+                loop_list.extend(b_2_inside_loop)
+                loop_list.append("END_CONDITION")
+            start = block_value["next"]
+            b_next_loop = []
+            if start is not None:
+                b_next_loop = get_blocks_in_loop(start, blocks_dict)
+            loop_list.extend(b_next_loop)
+            loop_list.append("END_LOOP_CONDITIONAL")
+            #LAS CONDICIONES. NO SE SI HAY QUE TENERLAS EN CUENTA. yo diría que NO.
+        
+        #print(loop_list)
+        return loop_list
+    except KeyError:
+        print("HAY UN ERROR REVISAR ESTOOOO")
+        return loop_list
 
 
 def checkif_loop(block, blocks_dict, block_id, loops_dict, existloop):
@@ -204,12 +204,14 @@ class DuplicateScripts():
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
                     self.blocks_dict[blocks] = blocks_value
+                    actual_opcode = blocks_value["opcode"]
+                    # Se hacen separados porque el orden es aleatorio y no quiero buscar un blockid y que no exista
 
             loops_dict = {}
             opcode_dict = {}   # block id -> block opcode
             loop_list = []
             toplevel_list = []
-            existloop = False # VER SI ESTO TIENE SENTIDO QUE ESTÉ AQUÍ
+            existloop = False # EXISTE UN LOOP EN UN SPRITE ESPECÍFICO
 
             # Loops through all blocks within each sprite
             for block_id, block in self.blocks_dict.items():
@@ -221,6 +223,7 @@ class DuplicateScripts():
                     try:
                         if block["parent"] is not None:
                             loops_dict[block["parent"]] = loop_list
+                            print(loops_dict)
                         else:
                             # Este opcode del loop es parent
                             loops_dict["loopistop"] = loop_list
