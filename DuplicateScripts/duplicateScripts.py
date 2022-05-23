@@ -351,4 +351,6 @@ def main(filename, json_file, ignoring):
     duplicate.analyze(filename, json_file)
     print("Minimum number of blocks: ", N_BLOCKS)
     print(duplicate.finalize(filename))
+    # Una buena forma de depurar es comprobar la cantidad de elementos presentes en el array de blocks (numero total de bloques) y luego compararlo con la estructura obtenida. 
+    # Deben coincidir en número 
     print("\n-- END OF DUPLICATESCRIPTS.PY SCRIPT --\n")
