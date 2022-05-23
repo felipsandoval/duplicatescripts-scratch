@@ -1,4 +1,7 @@
 #!/usr/bin/python3.8
+# -*- coding: utf-8 -*-
+# Github: @felipsandoval
+
 from collections import Counter
 from statistics import json2dna
 import sys

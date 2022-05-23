@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+# Github: @felipsandoval
 
 import sys
 from os import walk
@@ -8,13 +9,15 @@ from collections import defaultdict, OrderedDict
 import string
 
 def main (json_project):
+    """
+    Find the most frequent blocks among the duplicate blocks.
+    """
     d = defaultdict(int)
     ordered_words = OrderedDict()
 
     characters = string.ascii_letters + string.punctuation + string.digits
     characters += "€£ñÑçÇáÁéÉíÍóÓúÚäÄëËïÏöÖüÜàÀèÈìÌòÒùÙâÂêÊîÎôÔûÛ¶§©ŠØ®ГДЕЖИЛśĥčýÿў±žПШΘЯбψξλσαβδ"
 
-    #json_project = json.loads(open(filename).read())
     print("\n")
     print(json_project)
     print("\n")
@@ -25,7 +28,7 @@ def main (json_project):
             try:
                 d[blocks_value['opcode']] += 1
             except TypeError:
-                print("entre aqui")
+                print("Hay un error ?¿ check this")
                 pass
     most_frequent = sorted(d.items(), key=lambda kv: kv[1], reverse=True)
     for block, frequency in most_frequent:
@@ -33,7 +36,3 @@ def main (json_project):
 
     with open('blocks.json', 'w') as outfile:
         json.dump(dict(ordered_words), outfile, indent=4)
-
-#if __name__ == "__main__":
-#    main(sys.argv[1])
-    

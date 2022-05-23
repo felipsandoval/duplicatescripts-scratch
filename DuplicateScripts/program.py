@@ -1,11 +1,13 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Made by Felipe E. Sandoval Sibada
+# Github: @felipsandoval
 
+# Programs 
 import duplicateScripts
 import statistics
 import cluster
 import most_frequent_blocks
+
 import sys
 from datetime import datetime
 import shutil
@@ -73,13 +75,12 @@ def main(filename, ignoring):
     print("\n-- STARTING ANALYSIS --\n")
     json_project = obtaining_json(filename)
     if filename.endswith('.zip'):
-        # print("HAGO VARIOS o uno")
+        # Ahondar un poco más en casos donde se tengan que hacer un montón de ficheros
         for i in json_project:
             json_file = json.loads(open(i).read())
             duplicateScripts.main(filename, json_file, ignoring)
     else:
         duplicateScripts.main(filename, json_project, ignoring)
-    #duplicateScripts.main(filename, ignoring)
     most_frequent_blocks.main(json_project)
     spritefile = filename.replace('.json', '') + '-sprite.json'
     projectfile = filename.replace('.json', '') + '-project.json'

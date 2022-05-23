@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Made by Felipe E. Sandoval Sibada
+# Github: @felipsandoval
 
 from collections import Counter, defaultdict
 import json

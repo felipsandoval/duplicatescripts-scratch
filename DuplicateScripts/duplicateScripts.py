@@ -1,14 +1,17 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+# Github: @felipsandoval
 
 from difflib import SequenceMatcher
 import json
 import zipfile
 import sys
 import shutil
-# import os # ver este tema en windows ?
+# import os "Esto para limpiar" un poco las carpetas que se crean. Ver compatibilidad para Windows
 
+# Minimum number of blocks to be considerate duplicate 
 N_BLOCKS = 6
+
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
                "control_if_else", "control_repeat_until"]
 CONDITIONALS = ["control_if", "control_if_else", "control_repeat_until"]
