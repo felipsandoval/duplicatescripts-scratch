@@ -188,7 +188,7 @@ class DuplicateScripts():
 
     def analyze(self, filename, json_project):
         """Start parsering it"""
-        self.blocks_dict = {}  # block id -> block value
+        self.total_blocks = {}  # block id -> block value
         scripts_dict = {}
         ignoreblock_list = blocks2ignore()
         custom_dict = {}
@@ -197,6 +197,7 @@ class DuplicateScripts():
 
         # Loops through all sprites (and canva/Stage "sprite" too)
         for sprites_dict in json_project["targets"]:
+            self.blocks_dict = {}  # block id -> block value
             sprite = sprites_dict["name"]
             scripts_dict[sprite] = []
             custom_dict[sprite] = []
@@ -204,6 +205,7 @@ class DuplicateScripts():
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
                     self.blocks_dict[blocks] = blocks_value
+                    self.total_blocks[blocks] = blocks_value
                     actual_opcode = blocks_value["opcode"]
                     # Se hacen separados porque el orden es aleatorio y no quiero buscar un blockid y que no exista
 
@@ -212,7 +214,7 @@ class DuplicateScripts():
             loop_list = []
             toplevel_list = []
             existloop = False # EXISTE UN LOOP EN UN SPRITE ESPECÍFICO
-
+            print(self.blocks_dict)
             # Loops through all blocks within each sprite
             for block_id, block in self.blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
@@ -223,7 +225,6 @@ class DuplicateScripts():
                     try:
                         if block["parent"] is not None:
                             loops_dict[block["parent"]] = loop_list
-                            print(loops_dict)
                         else:
                             # Este opcode del loop es parent
                             loops_dict["loopistop"] = loop_list
@@ -250,8 +251,11 @@ class DuplicateScripts():
                     # custom_dict[sprite] += list_calls # ESTO FALLA WTF
                     list_customb.append(custom_dict)
                 
-                # Caso de que sea el primero la función
+                # Caso de que sea topLevel. REVISAR ESTO
                 if block["topLevel"]:
+                    print(sprite)
+                    print(block_id)
+                    print(block["opcode"])
                     sucesive_list = self.search_next([], block_id)
                     scripts_dict[sprite].append(sucesive_list)
                     toplevel_list.append(block_id)
@@ -263,6 +267,9 @@ class DuplicateScripts():
                                   ignoreblock_list, self.ignoringisactive)
             # print(custom_dict[sprite])
         print(scripts_dict)
+        print(self.total_blocks)
+        #print("\n")
+        #print(toplevel_list)
 
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
