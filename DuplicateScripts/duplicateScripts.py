@@ -4,6 +4,7 @@
 
 from difflib import SequenceMatcher
 import json
+import opcode
 # import os "Esto para limpiar" un poco las carpetas que se crean. Ver compatibilidad para Windows
 
 # Minimum number of blocks for a script to be considerate duplicate 
@@ -138,7 +139,7 @@ def getloop_ids(block_value, blocks_dict, block_id):
         print("HAY UN ERROR REVISAR ESTOOOO")
         return loop_list
 
-
+# Esta de momento no se uda
 def checkif_loop(block, blocks_dict, block_id, loops_dict, existloop):
     if block["opcode"] in LOOP_BLOCKS:
         existloop = True
@@ -194,6 +195,7 @@ class DuplicateScripts():
         custom_dict = {}
         list_calls = []
         list_customb = []
+        toplevel_list = []
 
         # Loops through all sprites (and canva/Stage "sprite" too)
         for sprites_dict in json_project["targets"]:
@@ -212,9 +214,8 @@ class DuplicateScripts():
             loops_dict = {}
             opcode_dict = {}   # block id -> block opcode
             loop_list = []
-            toplevel_list = []
             existloop = False # EXISTE UN LOOP EN UN SPRITE ESPECÍFICO
-            print(self.blocks_dict)
+            #print(self.blocks_dict)
             # Loops through all blocks within each sprite
             for block_id, block in self.blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
@@ -227,7 +228,9 @@ class DuplicateScripts():
                             loops_dict[block["parent"]] = loop_list
                         else:
                             # Este opcode del loop es parent
-                            loops_dict["loopistop"] = loop_list
+                            #loops_dict["loopistop"] = loop_list
+                            scripts_dict[sprite].append(loop_list)
+                            toplevel_list.append(block_id)
                     except KeyError:
                         # En casos que no existiese el valor de parent. SERIA MUY RARO.
                         print("QUE RARO. NO TIENE EL VALUE DE PARENT ESTE ELEMENTO: ", block["opcode"])
@@ -252,10 +255,7 @@ class DuplicateScripts():
                     list_customb.append(custom_dict)
                 
                 # Caso de que sea topLevel. REVISAR ESTO
-                if block["topLevel"]:
-                    print(sprite)
-                    print(block_id)
-                    print(block["opcode"])
+                if block["topLevel"] and block["opcode"] not in LOOP_BLOCKS:
                     sucesive_list = self.search_next([], block_id)
                     scripts_dict[sprite].append(sucesive_list)
                     toplevel_list.append(block_id)
@@ -265,11 +265,14 @@ class DuplicateScripts():
 
             change_blockid2opcode(scripts_dict, sprite, opcode_dict,
                                   ignoreblock_list, self.ignoringisactive)
-            # print(custom_dict[sprite])
-        print(scripts_dict)
-        print(self.total_blocks)
-        #print("\n")
-        #print(toplevel_list)
+            print("Ahora imprimo TODOS los scripts de cada objeto. ", sprite)
+            print(scripts_dict[sprite])
+            print()
+ 
+        #print(scripts_dict)
+        #print(self.total_blocks)
+        print("\n")
+        print(toplevel_list)
 
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
@@ -310,10 +313,11 @@ class DuplicateScripts():
         """Adds loop block in all blocks from project"""
         for parent in loops_dict:
             for list in scripts_dict[sprite]:
-                if parent == "loopistop":
-                    list[0:1] = loops_dict[parent]
-                    # Index distinto para loops top level
-                elif parent in list:  # SLICE INDEXING LIST
+                # no tiene sentido borrar.. para qué ??? yo solamente quiero agregar la lista de todo los bloques sucesivos del script
+                #if parent == "loopistop":
+                #    list[0:1] = loops_dict[parent]
+                #   Index distinto para loops top level
+                if parent in list:  # SLICE INDEXING LIST
                     position = list.index(parent)
                     # VER ESTO PORQUE BORRAR AL FINAL NO DEBERÍA SER PROBLEMA
                     if position+1 != len(list):
