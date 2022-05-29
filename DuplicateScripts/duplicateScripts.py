@@ -5,10 +5,11 @@
 from difflib import SequenceMatcher
 import json
 import opcode
-# import os "Esto para limpiar" un poco las carpetas que se crean. Ver compatibilidad para Windows
+# import os "Esto para limpiar" un poco las carpetas que se crean.
+# Ver compatibilidad para Windows
 
-# Minimum number of blocks for a script to be considerate duplicate 
-N_BLOCKS = 6
+
+N_BLOCKS = 6 # Minimo numero de bloques para que se considere como duplicado
 
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
                "control_if_else", "control_repeat_until"]
@@ -46,7 +47,8 @@ def blocks2ignore():
 
 def get_blocks_in_loop(start, block_dict):
     """Get the block_ids inside a loop"""
-    # SPECIAL CASE: there is only a single block inside a loop or to list a condition
+    # SPECIAL CASE: there is only a single block inside a loop 
+    # or to list a condition
     next_block_id = block_dict[start]["next"]
     b_inside_loop = []
     b_inside_loop.append(start)
@@ -93,16 +95,16 @@ def get_custominfo(block, custom_dict, sprite, block_dict):
         pass
 
 
-def change_blockid2opcode(scripts_dict, sprite, opcode_dict, ignoreblock_list, ignore):
+def change_blockid2opcode(scripts_dict, sprite, opcode_dict, ignore_list, ignore):
     """Changes block id for opcode"""
     for block in scripts_dict[sprite]:
         for j in range(len(block)):
             if block[j] not in CONTROL_MARKS:
                 block[j] = opcode_dict[block[j]]
             if ignore:
-                if block[j] in ignoreblock_list and block[j] not in CONTROL_MARKS:
+                if block[j] in ignore_list and block[j] not in CONTROL_MARKS:
                     # print("entré en un block que se tiene que ignorar")
-                    block[j] = "IGNORED BLOCK, should delete"
+                    block[j] = "IGNORED_BLOCK" #bloque ignorado, se debe eliminar o sencillamente ignorar ????
 
 
 def getloop_ids(block_value, blocks_dict, block_id):
@@ -132,28 +134,13 @@ def getloop_ids(block_value, blocks_dict, block_id):
             loop_list.extend(b_next_loop)
             loop_list.append("END_LOOP_CONDITIONAL")
             #LAS CONDICIONES. NO SE SI HAY QUE TENERLAS EN CUENTA. yo diría que NO.
-        
         #print(loop_list)
         return loop_list
     except KeyError:
         print("HAY UN ERROR REVISAR ESTOOOO")
         return loop_list
 
-# Esta de momento no se uda
-def checkif_loop(block, blocks_dict, block_id, loops_dict, existloop):
-    if block["opcode"] in LOOP_BLOCKS:
-        existloop = True
-        loop_list = getloop_ids(block, blocks_dict, block_id)
-        try:
-            if block["parent"] is not None:
-                loops_dict[block["parent"]] = loop_list
-            else:
-                loops_dict["loopistop"] = loop_list
-        except KeyError:
-            loops_dict["loopistop"] = loop_list
-    return loops_dict
-
-
+# No se usa. Ver si se puede borrar.
 def checkif_conditional(block, custom_dict, sprite, blocks_dict, list_calls, count_definitions, list_customb, count_calls):
     if block["opcode"] == "procedures_prototype":
         get_custominfo(block, custom_dict, sprite, blocks_dict)
@@ -191,7 +178,7 @@ class DuplicateScripts():
         """Start parsering it"""
         self.total_blocks = {}  # block id -> block value
         scripts_dict = {}
-        ignoreblock_list = blocks2ignore()
+        ignore_list = blocks2ignore()
         custom_dict = {}
         list_calls = []
         list_customb = []
@@ -219,8 +206,7 @@ class DuplicateScripts():
             # Loops through all blocks within each sprite
             for block_id, block in self.blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
-                # Caso de Loops
-                if block["opcode"] in LOOP_BLOCKS:
+                if block["opcode"] in LOOP_BLOCKS: # Caso de Loops
                     existloop = True
                     loop_list = getloop_ids(block, self.blocks_dict, block_id)
                     try:
@@ -264,7 +250,7 @@ class DuplicateScripts():
                 self.add_loop_block(loops_dict, scripts_dict, sprite)
 
             change_blockid2opcode(scripts_dict, sprite, opcode_dict,
-                                  ignoreblock_list, self.ignoringisactive)
+                                  ignore_list, self.ignoringisactive)
             #print("Ahora imprimo TODOS los scripts de cada objeto. ", sprite)
             #print(scripts_dict[sprite])
             #print()
@@ -315,7 +301,7 @@ class DuplicateScripts():
         #print("imprimo el scripts_dict ", scripts_dict)
         #print("imprimo el objeto en el que estoy ", sprite)
         for parent in loops_dict:
-            print("imprimo el parent ", parent)
+            #print("imprimo el parent ", parent)
             for list in scripts_dict[sprite]:
                 if parent in list:  # SLICE INDEXING LIST
                     position = list.index(parent)
