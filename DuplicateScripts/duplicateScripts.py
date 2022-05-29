@@ -261,18 +261,18 @@ class DuplicateScripts():
                     toplevel_list.append(block_id)
 
             if existloop:
-                self.addloopblock(loops_dict, scripts_dict, sprite)
+                self.add_loop_block(loops_dict, scripts_dict, sprite)
 
             change_blockid2opcode(scripts_dict, sprite, opcode_dict,
                                   ignoreblock_list, self.ignoringisactive)
-            print("Ahora imprimo TODOS los scripts de cada objeto. ", sprite)
-            print(scripts_dict[sprite])
-            print()
+            #print("Ahora imprimo TODOS los scripts de cada objeto. ", sprite)
+            #print(scripts_dict[sprite])
+            #print()
  
         #print(scripts_dict)
         #print(self.total_blocks)
-        print("\n")
-        print(toplevel_list)
+        #print("\n")
+        #print(toplevel_list)
 
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
@@ -309,30 +309,23 @@ class DuplicateScripts():
             block_list = self.search_next(block_list, block_id)
         return block_list
 
-    def addloopblock(self, loops_dict, scripts_dict, sprite):
+    def add_loop_block(self, loops_dict, scripts_dict, sprite):
         """Adds loop block in all blocks from project"""
+        #print("imprimo el loops_dict ", loops_dict)
+        #print("imprimo el scripts_dict ", scripts_dict)
+        #print("imprimo el objeto en el que estoy ", sprite)
         for parent in loops_dict:
+            print("imprimo el parent ", parent)
             for list in scripts_dict[sprite]:
-                # no tiene sentido borrar.. para qué ??? yo solamente quiero agregar la lista de todo los bloques sucesivos del script
-                #if parent == "loopistop":
-                #    list[0:1] = loops_dict[parent]
-                #   Index distinto para loops top level
                 if parent in list:  # SLICE INDEXING LIST
                     position = list.index(parent)
-                    # VER ESTO PORQUE BORRAR AL FINAL NO DEBERÍA SER PROBLEMA
+                    #print("entré, tengo que meterlo en esta pos: ", position)
                     if position+1 != len(list):
-                        # print(list)
                         del list[position+1]  # PARA BORRAR LOOP Q DUPLICA
                         list[position+1:1] = loops_dict[parent]
                         # print(list)
-                    else:  # en caso que sea la ultima pos
-                        # print(list)
-                        # print(parent)
-                        # print(loops_dict[parent])
-                        # print("VER ESTE TEMA")
-                        # print(position)
-                        # del list[position] # PARA BORRAR LOOP QUE DUPLICA
-                        # list[position:1] = loops_dict[parent]
+                    else:
+                        # No tiene sentido que entré a alguno de estos casos
                         list.extend(loops_dict[parent])
 
     def finalize(self, filename):
