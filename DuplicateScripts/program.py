@@ -57,6 +57,21 @@ def obtaining_json(filename):
     return json_file
 
 
+def analyze(filename, ignoring, json, type_of_file):
+    """Analizing process"""
+    duplicateScripts.main(filename, json, ignoring)
+    most_frequent_blocks.main(json)
+    spritefile = filename.replace(type_of_file, '') + '-sprite.json'
+    projectfile = filename.replace(type_of_file, '') + '-project.json'
+    print("\n-- GETTING INTRA SPRITE STATISTICS --\n")
+    statistics.main(spritefile)
+    print("\n-- GETTING INTRA PROJECT STATISTICS --\n")
+    statistics.main(projectfile)
+    print("\n-- STARTING CLUSTER.PY SCRIPT --\n")
+    cluster.main(filename)
+    print("\n-- END OF CLUSTER.PY SCRIPT --\n")
+
+
 def main(filename, ignoring):
     """MAIN PROGRAM"""
     print("\n*** STARTING ANALYSIS ***\n")
@@ -65,31 +80,9 @@ def main(filename, ignoring):
         # Ahondar un poco más en casos donde se tengan que hacer un montón de ficheros
         for i in json_project:
             json_file = json.loads(open(i).read())
-            duplicateScripts.main(filename, json_file, ignoring)
-            # Luego de esto debería hacer toda la continuación del código.
-            # Es decir: most frequent block, statistics, cluster.. etc
-            most_frequent_blocks.main(json_file)
-            spritefile = i.replace('.zip', '') + '-sprite.json'
-            projectfile = i.replace('.zip', '') + '-project.json'
-            print("\n-- GETTING INTRA SPRITE STATISTICS --\n")
-            statistics.main(spritefile)
-            print("\n-- GETTING INTRA PROJECT STATISTICS --\n")
-            statistics.main(projectfile)
-            print("\n-- STARTING CLUSTER.PY SCRIPT --\n")
-            cluster.main(i)
-            print("\n-- END OF CLUSTER.PY SCRIPT --\n")
+            analyze(filename, ignoring, json_file, '.zip')
     else:
-        duplicateScripts.main(filename, json_project, ignoring)
-        most_frequent_blocks.main(json_project)
-        spritefile = filename.replace('.json', '') + '-sprite.json'
-        projectfile = filename.replace('.json', '') + '-project.json'
-        print("\n-- GETTING INTRA SPRITE STATISTICS --\n")
-        statistics.main(spritefile)
-        print("\n-- GETTING INTRA PROJECT STATISTICS --\n")
-        statistics.main(projectfile)
-        print("\n-- STARTING CLUSTER.PY SCRIPT --\n")
-        cluster.main(filename)
-        print("\n-- END OF CLUSTER.PY SCRIPT --\n")
+        analyze(filename, ignoring, json_project, '.json')
 
 if __name__ == "__main__":
     try:
