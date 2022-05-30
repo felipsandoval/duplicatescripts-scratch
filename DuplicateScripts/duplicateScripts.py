@@ -83,7 +83,7 @@ def get_function_blocks_opcode(start, block_dict):
 def get_custominfo(block, custom_dict, sprite, block_dict):
     """Extract information from custom blocks"""
     try:
-        list_blocks = get_blocks_in_loop(block["parent"], block_dict)
+        list_blocks = get_function_blocks_opcode(block["parent"], block_dict)
         custom_dict[sprite].append({"type": "procedures_prototype",
                 "name": block["mutation"]["proccode"],
                 "argument_names": block["mutation"]["argumentnames"],
@@ -117,9 +117,9 @@ def getloop_ids(block_value, blocks_dict, block_id):
             return loop_list
         b_inside_loop = get_blocks_in_loop(start, blocks_dict)
         loop_list.extend(b_inside_loop)
-        loop_list.append("END_LOOP")
 
         if block_value["opcode"] in CONDITIONALS:
+            loop_list.append("END_CONDITION")
             if block_value["opcode"] == "control_if_else":
                 start = block_value["inputs"]["SUBSTACK2"][1]
                 b_2_inside_loop = []
@@ -127,14 +127,16 @@ def getloop_ids(block_value, blocks_dict, block_id):
                     b_2_inside_loop = get_blocks_in_loop(start, blocks_dict)
                 loop_list.extend(b_2_inside_loop)
                 loop_list.append("END_CONDITION")
-            start = block_value["next"]
-            b_next_loop = []
-            if start is not None:
-                b_next_loop = get_blocks_in_loop(start, blocks_dict)
-            loop_list.extend(b_next_loop)
-            loop_list.append("END_LOOP_CONDITIONAL")
+            # No tengo porque regresar todo lo que precede al loop. Solamente lo de dentro!!! 
+            #start = block_value["next"]
+            #b_next_loop = []
+            #if start is not None:
+            #    b_next_loop = get_blocks_in_loop(start, blocks_dict)
+            #    loop_list.extend(b_next_loop)
+            #loop_list.append("END_LOOP_CONDITIONAL")
+            #return loop_list
             #LAS CONDICIONES. NO SE SI HAY QUE TENERLAS EN CUENTA. yo diría que NO.
-        #print(loop_list)
+        loop_list.append("END_LOOP")
         return loop_list
     except KeyError:
         print("HAY UN ERROR REVISAR ESTOOOO")
@@ -201,7 +203,6 @@ class DuplicateScripts():
             opcode_dict = {}   # block id -> block opcode. THIS IS FOR EACH SPRITE
             loop_list = []
             existloop = False # EXISTE UN LOOP EN UN SPRITE ESPECÍFICO
-            #print(self.blocks_dict)
             # Loops through all blocks within each sprite
             for block_id, block in self.blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
@@ -219,7 +220,6 @@ class DuplicateScripts():
                     except KeyError:
                         # En casos que no existiese el valor de parent. SERIA MUY RARO.
                         print("QUE RARO. NO TIENE EL VALUE DE PARENT ESTE ELEMENTO: ", block["opcode"])
-                        loops_dict["loopistop"] = loop_list
                 
                 # Caso de custom blocks
                 if block["opcode"] == "procedures_prototype":
@@ -245,6 +245,7 @@ class DuplicateScripts():
                     scripts_dict[sprite].append(sucesive_list)
                     toplevel_list.append(block_id)
 
+
             if existloop:
                 self.add_loop_block(loops_dict, scripts_dict, sprite)
 
@@ -254,7 +255,7 @@ class DuplicateScripts():
             #print(scripts_dict[sprite])
             #print()
  
-        print(scripts_dict)
+        #print(scripts_dict)
 
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
@@ -298,10 +299,9 @@ class DuplicateScripts():
                     position = list.index(parent)
                     if position+1 != len(list):
                         del list[position+1]  # PARA BORRAR LOOP Q DUPLICA
+                        #list.pop(position+1)  # OTRA FORMA DE HACER LO DE ARRIBA
                         list[position+1:1] = loops_dict[parent]
-                        # print(list)
                     else:
-                        # No tiene sentido que entré a alguno de estos casos
                         list.extend(loops_dict[parent])
 
     def finalize(self, filename):
