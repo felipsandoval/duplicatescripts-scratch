@@ -45,8 +45,8 @@ def blocks2ignore():
     return ignore_list
 
 
-def get_blocks_in_loop(start, block_dict):
-    """Get the block_ids inside a loop"""
+def get_next_blocks(start, block_dict):
+    """Get the next block_ids"""
     # SPECIAL CASE: there is only a single block inside a loop 
     # or to list a condition
     next_block_id = block_dict[start]["next"]
@@ -67,13 +67,24 @@ def get_blocks_in_loop(start, block_dict):
 
 
 # Esta función y la de arriba son la misma. Estudiarla más a fondo y unificarlas.
-def get_function_blocks_opcode(start, block_dict):
-    """Get the opcode value"""
+def get_custom_blocks(start, block_dict):
+    """Get the customs opcode value"""
     list_blocks = []
     begin = block_dict[block_dict[start]["next"]]
+    # EN CASO QUE HAYA LOOPS EN MI CUSTOM !!! 
     while begin is not None:
         list_blocks.append(begin["opcode"])
-        if begin["next"] is not None:
+        if begin["opcode"] in LOOP_BLOCKS: # Caso de Loops
+            loop_list = getloop_ids(begin, block_dict, block_dict[start]["next"])
+            try:
+                list_blocks.append(loop_list)
+                if begin["next"] is not None:
+                    begin = block_dict[begin["next"]]
+                else:
+                    begin = None
+            except KeyError:
+                print("QUE RARO. NO TIENE EL VALUE DE PARENT ESTE ELEMENTO: ")
+        elif begin["next"] is not None:
             begin = block_dict[begin["next"]]
         else:
             begin = None
@@ -83,7 +94,8 @@ def get_function_blocks_opcode(start, block_dict):
 def get_custominfo(block, custom_dict, sprite, block_dict):
     """Extract information from custom blocks"""
     try:
-        list_blocks = get_function_blocks_opcode(block["parent"], block_dict)
+        list_blocks = get_custom_blocks(block["parent"], block_dict)
+        print(list_blocks)
         custom_dict[sprite].append({"type": "procedures_prototype",
                 "name": block["mutation"]["proccode"],
                 "argument_names": block["mutation"]["argumentnames"],
@@ -104,7 +116,7 @@ def change_blockid2opcode(scripts_dict, sprite, opcode_dict, ignore_list, ignore
             if ignore:
                 if block[j] in ignore_list and block[j] not in CONTROL_MARKS:
                     # print("entré en un block que se tiene que ignorar")
-                    block[j] = "IGNORED_BLOCK" #bloque ignorado, se debe eliminar o sencillamente ignorar ????
+                    block[j] = "IGNORED_BLOCK" # bloque ignorado, se debe eliminar o sencillamente ignorar ????
 
 
 def getloop_ids(block_value, blocks_dict, block_id):
@@ -115,53 +127,24 @@ def getloop_ids(block_value, blocks_dict, block_id):
         start = block_value["inputs"]["SUBSTACK"][1] # What happens if a loop does not have inputs nor substack value ? ALL OF THEM MUST HAVE THIS
         if start is None:
             return loop_list
-        b_inside_loop = get_blocks_in_loop(start, blocks_dict)
+        b_inside_loop = get_next_blocks(start, blocks_dict)
         loop_list.extend(b_inside_loop)
-
         if block_value["opcode"] in CONDITIONALS:
             loop_list.append("END_CONDITION")
             if block_value["opcode"] == "control_if_else":
                 start = block_value["inputs"]["SUBSTACK2"][1]
                 b_2_inside_loop = []
                 if start is not None:
-                    b_2_inside_loop = get_blocks_in_loop(start, blocks_dict)
+                    b_2_inside_loop = get_next_blocks(start, blocks_dict)
                 loop_list.extend(b_2_inside_loop)
                 loop_list.append("END_CONDITION")
             # No tengo porque regresar todo lo que precede al loop. Solamente lo de dentro!!! 
-            #start = block_value["next"]
-            #b_next_loop = []
-            #if start is not None:
-            #    b_next_loop = get_blocks_in_loop(start, blocks_dict)
-            #    loop_list.extend(b_next_loop)
             #loop_list.append("END_LOOP_CONDITIONAL")
-            #return loop_list
-            #LAS CONDICIONES. NO SE SI HAY QUE TENERLAS EN CUENTA. yo diría que NO.
         loop_list.append("END_LOOP")
         return loop_list
     except KeyError:
         print("HAY UN ERROR REVISAR ESTOOOO")
         return loop_list
-
-# No se usa. Ver si se puede borrar.
-def checkif_conditional(block, custom_dict, sprite, blocks_dict, list_calls, count_definitions, list_customb, count_calls):
-    if block["opcode"] == "procedures_prototype":
-        get_custominfo(block, custom_dict, sprite, blocks_dict)
-        count_definitions += 1
-    elif block["opcode"] == "procedures_call":
-        list_calls.append({"type": "procedures_call",
-                            "name": block["mutation"]["proccode"],
-                            "argument_ids": block["mutation"]["argumentids"]})
-        self.count_calls += 1
-        for call in list_calls:
-                # print(call)
-            for procedure in custom_dict[sprite]:
-                # print(procedure)
-                if procedure["name"] == call["name"] and procedure["type"] == "procedures_prototype":
-                    procedure["n_calls"] = procedure["n_calls"] + 1
-        # custom_dict[sprite] += list_calls # ESTO FALLA WTF
-        list_customb.append(custom_dict)
-    return count_definitions, count_calls
-
 
 class DuplicateScripts():
     """
@@ -214,7 +197,6 @@ class DuplicateScripts():
                             loops_dict[block["parent"]] = loop_list
                         else:
                             # Este opcode del loop es parent
-                            #loops_dict["loopistop"] = loop_list
                             scripts_dict[sprite].append(loop_list)
                             toplevel_list.append(block_id)
                     except KeyError:
@@ -251,9 +233,6 @@ class DuplicateScripts():
 
             change_blockid2opcode(scripts_dict, sprite, opcode_dict,
                                   ignore_list, self.ignoringisactive)
-            #print("Ahora imprimo TODOS los scripts de cada objeto. ", sprite)
-            #print(scripts_dict[sprite])
-            #print()
  
         #print(scripts_dict)
 
@@ -299,7 +278,7 @@ class DuplicateScripts():
                     position = list.index(parent)
                     if position+1 != len(list):
                         del list[position+1]  # PARA BORRAR LOOP Q DUPLICA
-                        #list.pop(position+1)  # OTRA FORMA DE HACER LO DE ARRIBA
+                        # list.pop(position+1)  # OTRA FORMA DE HACER LO DE ARRIBA
                         list[position+1:1] = loops_dict[parent]
                     else:
                         list.extend(loops_dict[parent])

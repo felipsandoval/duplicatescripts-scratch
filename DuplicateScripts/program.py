@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Github: @felipsandoval
 
-# Programs 
+# My Scripts / Libraries 
 import duplicateScripts
 import statistics
 import cluster

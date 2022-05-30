@@ -24,10 +24,11 @@ def json2dna(filename):
         block_list = []
         for block in script:
             if block not in blocks_dict:
-                blocks_dict[block] = characters[len(blocks_dict)]# Para asignar uno nuevo con su nueva letra
+                blocks_dict[block] = characters[len(blocks_dict)]  # Para asignar uno nuevo con su nueva letra
             block_list.append(blocks_dict[block])
         scripts.append(''.join(block_list))
     return(scripts, blocks_dict)
+
 
 def main(filename):
     (scripts, blocks_dict) = json2dna(filename)
@@ -35,7 +36,7 @@ def main(filename):
         return None
     inv_blocks_dict = {v: k for k, v in blocks_dict.items()}
     c = Counter(tuple(scripts))
-    #print(c)
+    # print(c)
     most_common = c.most_common(10)
     print("10 most common:")
     for most in most_common:

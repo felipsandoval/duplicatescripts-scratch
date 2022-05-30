@@ -6,7 +6,8 @@ import json
 from collections import defaultdict, OrderedDict
 import string
 
-def main (json_project):
+
+def main(json_project):
     """
     Find the most frequent blocks among the whole json.
     """
@@ -16,9 +17,9 @@ def main (json_project):
     characters = string.ascii_letters + string.punctuation + string.digits
     characters += "€£ñÑçÇáÁéÉíÍóÓúÚäÄëËïÏöÖüÜàÀèÈìÌòÒùÙâÂêÊîÎôÔûÛ¶§©ŠØ®ГДЕЖИЛśĥčýÿў±žПШΘЯбψξλσαβδ"
 
-    # Loops through all sprites
+    # Itera sobre todos los objetos
     for sprites_dict in json_project["targets"]:
-        # Gets all blocks out of sprite
+        # Obtiene todos los bloques de cada objeto
         for blocks, blocks_value in sprites_dict["blocks"].items():
             try:
                 # Counting each opcode from all sprites
@@ -26,7 +27,7 @@ def main (json_project):
             except TypeError:
                 print("Error message: Check this out. Special case")
                 pass
-    # Ordering opcodes from most to least frequent
+    # Para ordenar los opcodes desde el menos al más frecuente
     most_frequent = sorted(d.items(), key=lambda kv: kv[1], reverse=True)
     for block, frequency in most_frequent:
         ordered_words[block] = characters[len(ordered_words)]
