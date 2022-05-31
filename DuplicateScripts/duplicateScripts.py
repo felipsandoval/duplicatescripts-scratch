@@ -66,42 +66,19 @@ def get_next_blocks(start, block_dict):
     return b_inside_loop
 
 
-# Esta función y la de arriba son la misma. Estudiarla más a fondo y unificarlas.
-def get_custom_blocks(start, block_dict):
-    """Get the customs opcode value"""
-    list_blocks = []
-    begin = block_dict[block_dict[start]["next"]]
-    # EN CASO QUE HAYA LOOPS EN MI CUSTOM !!! 
-    while begin is not None:
-        list_blocks.append(begin["opcode"])
-        if begin["opcode"] in LOOP_BLOCKS: # Caso de Loops
-            loop_list = getloop_ids(begin, block_dict, block_dict[start]["next"])
-            try:
-                list_blocks.append(loop_list)
-                if begin["next"] is not None:
-                    begin = block_dict[begin["next"]]
-                else:
-                    begin = None
-            except KeyError:
-                print("QUE RARO. NO TIENE EL VALUE DE PARENT ESTE ELEMENTO: ")
-        elif begin["next"] is not None:
-            begin = block_dict[begin["next"]]
-        else:
-            begin = None
-    return list_blocks
-
-
-def get_custominfo(block, custom_dict, sprite, block_dict):
+def get_custominfo(block):
     """Extract information from custom blocks"""
     try:
-        list_blocks = get_custom_blocks(block["parent"], block_dict)
-        print(list_blocks)
-        custom_dict[sprite].append({"type": "procedures_prototype",
-                "name": block["mutation"]["proccode"],
+        #list_blocks = get_custom_blocks(block["parent"], block_dict)
+        #print(list_blocks)
+        custom_info = []
+        custom_info = {"type": "procedures_prototype",
+                "custom_name": block["mutation"]["proccode"],
                 "argument_names": block["mutation"]["argumentnames"],
                 "argument_ids": block["mutation"]["argumentids"],
-                "blocks": list_blocks,
-                "n_calls": 0})
+                "blocks": "Aqui deberían los bloques", #list_blocks,
+                "n_calls": 0}
+        return custom_info
     except KeyError:
         # COMENTARLE A GREGORIO QUE HAY CASOS EN LOS QUE NO EXISTE EL PARENT
         pass
@@ -174,7 +151,6 @@ class DuplicateScripts():
             self.blocks_dict = {}  # block id -> block value
             sprite = sprites_dict["name"]
             scripts_dict[sprite] = []
-            custom_dict[sprite] = []
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
@@ -205,7 +181,12 @@ class DuplicateScripts():
                 
                 # Caso de custom blocks
                 if block["opcode"] == "procedures_prototype":
-                    get_custominfo(block, custom_dict, sprite, self.blocks_dict)
+                    custom_dict[sprite] = []
+                    print("ENTRO EN EL CUSTOM")
+                    #custom = get_custominfo(block)
+                    custom_dict[sprite].append(get_custominfo(block))
+                    print(custom_dict)
+                    print(custom_dict[sprite][0]["argument_ids"])
                     self.count_definitions += 1
                 elif block["opcode"] == "procedures_call":
                     list_calls.append({"type": "procedures_call",
