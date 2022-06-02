@@ -14,7 +14,7 @@ N_BLOCKS = 6 # Minimo numero de bloques para que se considere como duplicado
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
                "control_if_else", "control_repeat_until"]
 CONDITIONALS = ["control_if", "control_if_else", "control_repeat_until"]
-CONTROL_MARKS = ["END_LOOP", "END_CONDITION", "END_LOOP_CONDITIONAL"]
+CONTROL_MARKS = ["END_LOOP", "END_IF", "END_ELSE", "END_LOOP_CONDITIONAL"]
 
 
 def find_dups(blocks):
@@ -71,7 +71,6 @@ def get_custominfo(block):
     try:
         #list_blocks = get_custom_blocks(block["parent"], block_dict)
         #print(list_blocks)
-        custom_info = []
         custom_info = {"type": "procedures_prototype",
                 "custom_name": block["mutation"]["proccode"],
                 "argument_names": block["mutation"]["argumentnames"],
@@ -84,9 +83,9 @@ def get_custominfo(block):
         pass
 
 
-def change_blockid2opcode(scripts_dict, sprite, opcode_dict, ignore_list, ignore):
+def change_blockid2opcode(sprite, opcode_dict, ignore_list, ignore):
     """Changes block id for opcode"""
-    for block in scripts_dict[sprite]:
+    for block in sprite:
         for j in range(len(block)):
             if block[j] not in CONTROL_MARKS:
                 block[j] = opcode_dict[block[j]]
@@ -107,14 +106,14 @@ def getloop_ids(block_value, blocks_dict, block_id):
         b_inside_loop = get_next_blocks(start, blocks_dict)
         loop_list.extend(b_inside_loop)
         if block_value["opcode"] in CONDITIONALS:
-            loop_list.append("END_CONDITION")
+            loop_list.append("END_IF")
             if block_value["opcode"] == "control_if_else":
                 start = block_value["inputs"]["SUBSTACK2"][1]
                 b_2_inside_loop = []
                 if start is not None:
                     b_2_inside_loop = get_next_blocks(start, blocks_dict)
                 loop_list.extend(b_2_inside_loop)
-                loop_list.append("END_CONDITION")
+                loop_list.append("END_ELSE")
             # No tengo porque regresar todo lo que precede al loop. Solamente lo de dentro!!! 
             #loop_list.append("END_LOOP_CONDITIONAL")
         loop_list.append("END_LOOP")
@@ -151,6 +150,7 @@ class DuplicateScripts():
             self.blocks_dict = {}  # block id -> block value
             sprite = sprites_dict["name"]
             scripts_dict[sprite] = []
+            custom_dict[sprite] = []
             # Gets all blocks out of sprite
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
@@ -181,12 +181,11 @@ class DuplicateScripts():
                 
                 # Caso de custom blocks
                 if block["opcode"] == "procedures_prototype":
-                    custom_dict[sprite] = []
-                    print("ENTRO EN EL CUSTOM")
+                    #print("ENTRO EN EL CUSTOM")
                     #custom = get_custominfo(block)
                     custom_dict[sprite].append(get_custominfo(block))
-                    print(custom_dict)
-                    print(custom_dict[sprite][0]["argument_ids"])
+                    #print(custom_dict)
+                    #print(custom_dict[sprite][0]["argument_ids"])
                     self.count_definitions += 1
                 elif block["opcode"] == "procedures_call":
                     list_calls.append({"type": "procedures_call",
@@ -196,13 +195,11 @@ class DuplicateScripts():
                     for call in list_calls:
                             # print(call)
                         for procedure in custom_dict[sprite]:
-                            # print(procedure)
-                            if procedure["name"] == call["name"] and procedure["type"] == "procedures_prototype":
+                            if procedure["custom_name"] == call["name"] and procedure["type"] == "procedures_prototype":
                                 procedure["n_calls"] = procedure["n_calls"] + 1
-                    # custom_dict[sprite] += list_calls # ESTO FALLA WTF
                     list_customb.append(custom_dict)
                 
-                # Caso de que sea topLevel. REVISAR ESTO
+                # Caso de que sea topLevel.
                 if block["topLevel"] and block["opcode"] not in LOOP_BLOCKS:
                     sucesive_list = self.search_next([], block_id)
                     scripts_dict[sprite].append(sucesive_list)
@@ -212,11 +209,11 @@ class DuplicateScripts():
             if existloop:
                 self.add_loop_block(loops_dict, scripts_dict, sprite)
 
-            change_blockid2opcode(scripts_dict, sprite, opcode_dict,
+            change_blockid2opcode(scripts_dict[sprite], opcode_dict,
                                   ignore_list, self.ignoringisactive)
  
         #print(scripts_dict)
-
+        #print(toplevel_list)
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
         # self.get_customb_info()
@@ -263,6 +260,7 @@ class DuplicateScripts():
                         list[position+1:1] = loops_dict[parent]
                     else:
                         list.extend(loops_dict[parent])
+
 
     def finalize(self, filename):
         """Output the duplicate scripts detected."""
