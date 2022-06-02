@@ -4,7 +4,7 @@
 
 from difflib import SequenceMatcher
 import json
-import opcode
+from textwrap import wrap
 # import os "Esto para limpiar" un poco las carpetas que se crean.
 # Ver compatibilidad para Windows
 
@@ -74,8 +74,7 @@ def get_custominfo(block):
         custom_info = {"type": "procedures_prototype",
                 "custom_name": block["mutation"]["proccode"],
                 "argument_names": block["mutation"]["argumentnames"],
-                "argument_ids": block["mutation"]["argumentids"],
-                "blocks": "Aqui deberían los bloques", #list_blocks,
+                "blocks": block["parent"], #list_blocks,
                 "n_calls": 0}
         return custom_info
     except KeyError:
@@ -131,9 +130,9 @@ class DuplicateScripts():
     def __init__(self, ignoring):
         self.ignoringisactive = ignoring
         self.toplevel_list = []
-        self.count_definitions = 0
-        self.count_calls = 0
-        self.customb_info = {}
+        self.many_custom_blocks = 0
+        self.many_custom_calls = 0
+        self.all_customs_blocks = {}
 
     def analyze(self, filename, json_project):
         """Start parsering it"""
@@ -182,16 +181,13 @@ class DuplicateScripts():
                 # Caso de custom blocks
                 if block["opcode"] == "procedures_prototype":
                     #print("ENTRO EN EL CUSTOM")
-                    #custom = get_custominfo(block)
                     custom_dict[sprite].append(get_custominfo(block))
-                    #print(custom_dict)
-                    #print(custom_dict[sprite][0]["argument_ids"])
-                    self.count_definitions += 1
+                    self.many_custom_blocks += 1
                 elif block["opcode"] == "procedures_call":
                     list_calls.append({"type": "procedures_call",
                                        "name": block["mutation"]["proccode"],
                                        "argument_ids": block["mutation"]["argumentids"]})
-                    self.count_calls += 1
+                    self.many_custom_calls += 1
                     for call in list_calls:
                             # print(call)
                         for procedure in custom_dict[sprite]:
@@ -204,23 +200,33 @@ class DuplicateScripts():
                     sucesive_list = self.search_next([], block_id)
                     scripts_dict[sprite].append(sucesive_list)
                     toplevel_list.append(block_id)
-
+            
+            # Para agregar campo de bloques en cada custom
+            iterate = 0
+            while len(custom_dict[sprite]) != iterate:
+                j = 0
+                for j in custom_dict[sprite]:
+                    for k in scripts_dict[sprite]:
+                        if j["blocks"] in k:
+                            j["blocks"] = k
+                iterate += 1
 
             if existloop:
                 self.add_loop_block(loops_dict, scripts_dict, sprite)
+
+            #print(scripts_dict[sprite])
 
             change_blockid2opcode(scripts_dict[sprite], opcode_dict,
                                   ignore_list, self.ignoringisactive)
  
         #print(scripts_dict)
-        #print(toplevel_list)
+        #print(custom_dict)
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
-        # self.get_customb_info()
-        self.customb_info = {"name": filename.split(".")[0],
+        self.all_customs_blocks = {"name": filename.split(".")[0],
                              "custom_blocks": list_customb,
-                             "n_custom_blocks": self.count_definitions,
-                             "n_custom_blocks_calls": self.count_calls}
+                             "number_custom_blocks": self.many_custom_blocks,
+                             "number_custom_blocks_calls": self.many_custom_calls}
 
     def get_dup_intra_sprite(self, scripts_dict):
         """Finds intra-sprite duplication"""
@@ -272,14 +278,14 @@ class DuplicateScripts():
             json.dump(self.project_dups_list, outfile)
         with open(filename.replace('.json', '') + '-customblocksinfo.json',
                   'w') as outfile:
-            json.dump(self.customb_info, outfile)
+            json.dump(self.all_customs_blocks, outfile)
         count = sum([len(listElem) for listElem in self.intra_dups_list])
         count = len(self.intra_dups_list)
         result = ("\n{} intra-sprite duplicate scripts found\n".format(count))
         result += ("%d project-wide duplicate scripts found\n" %
                    len(self.project_dups_list))
-        result += (str(self.count_definitions) + " custom blocks found\n")
-        result += (str(self.count_calls) + " custom blocks calls found\n")
+        result += (str(self.many_custom_blocks) + " custom blocks found in all project\n")
+        result += (str(self.many_custom_calls) + " custom blocks calls found in all project\n")
         return result
 
 
