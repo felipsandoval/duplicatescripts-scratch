@@ -121,6 +121,22 @@ def getloop_ids(block_value, blocks_dict, block_id):
         print("HAY UN ERROR REVISAR ESTOOOO")
         return loop_list
 
+
+def add_loop_block(loops_dict, scripts_dict, sprite):
+    """Adds loop block in all blocks from project"""
+    for parent in loops_dict:
+        for list in scripts_dict[sprite]:
+            if parent in list:  # SLICE INDEXING LIST
+                position = list.index(parent)
+                if position+1 != len(list):
+                    del list[position+1]  # PARA BORRAR LOOP Q DUPLICA
+                    # list.pop(position+1)  # OTRA FORMA DE HACER LO DE ARRIBA
+                    list[position+1:1] = loops_dict[parent]
+                else:
+                    list.extend(loops_dict[parent])
+    return scripts_dict
+
+
 class DuplicateScripts():
     """
     Analyzer of duplicate scripts within a .json
@@ -130,13 +146,14 @@ class DuplicateScripts():
     def __init__(self, ignoring):
         self.ignoringisactive = ignoring
         self.toplevel_list = []
-        self.many_custom_blocks = 0
-        self.many_custom_calls = 0
+        self.number_total_blocks = 0
+        self.total_custom_blocks = 0
+        self.total_custom_calls = 0
         self.all_customs_blocks = {}
 
     def analyze(self, filename, json_project):
         """Start parsering it"""
-        self.total_blocks = {}  # block id -> block value
+        total_blocks = {}  # block id -> block value
         scripts_dict = {}
         ignore_list = blocks2ignore()
         custom_dict = {}
@@ -154,7 +171,8 @@ class DuplicateScripts():
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
                     self.blocks_dict[blocks] = blocks_value
-                    self.total_blocks[blocks] = blocks_value
+                    total_blocks[blocks] = blocks_value
+                    self.number_total_blocks += 1
                     # Se hacen separados porque el orden es aleatorio y no quiero buscar un blockid y que no exista
 
             loops_dict = {}
@@ -180,14 +198,13 @@ class DuplicateScripts():
                 
                 # Caso de custom blocks
                 if block["opcode"] == "procedures_prototype":
-                    #print("ENTRO EN EL CUSTOM")
                     custom_dict[sprite].append(get_custominfo(block))
-                    self.many_custom_blocks += 1
+                    self.total_custom_blocks += 1
                 elif block["opcode"] == "procedures_call":
+                    self.total_custom_calls += 1
                     list_calls.append({"type": "procedures_call",
                                        "name": block["mutation"]["proccode"],
                                        "argument_ids": block["mutation"]["argumentids"]})
-                    self.many_custom_calls += 1
                     for call in list_calls:
                             # print(call)
                         for procedure in custom_dict[sprite]:
@@ -212,7 +229,7 @@ class DuplicateScripts():
                 iterate += 1
 
             if existloop:
-                self.add_loop_block(loops_dict, scripts_dict, sprite)
+                scripts_dict = add_loop_block(loops_dict, scripts_dict, sprite)
 
             #print(scripts_dict[sprite])
 
@@ -225,8 +242,8 @@ class DuplicateScripts():
         self.get_dup_project_wide(scripts_dict)
         self.all_customs_blocks = {"name": filename.split(".")[0],
                              "custom_blocks": list_customb,
-                             "number_custom_blocks": self.many_custom_blocks,
-                             "number_custom_blocks_calls": self.many_custom_calls}
+                             "number_custom_blocks": self.total_custom_blocks,
+                             "number_custom_blocks_calls": self.total_custom_calls}
 
     def get_dup_intra_sprite(self, scripts_dict):
         """Finds intra-sprite duplication"""
@@ -254,19 +271,6 @@ class DuplicateScripts():
             block_list = self.search_next(block_list, block_id)
         return block_list
 
-    def add_loop_block(self, loops_dict, scripts_dict, sprite):
-        """Adds loop block in all blocks from project"""
-        for parent in loops_dict:
-            for list in scripts_dict[sprite]:
-                if parent in list:  # SLICE INDEXING LIST
-                    position = list.index(parent)
-                    if position+1 != len(list):
-                        del list[position+1]  # PARA BORRAR LOOP Q DUPLICA
-                        # list.pop(position+1)  # OTRA FORMA DE HACER LO DE ARRIBA
-                        list[position+1:1] = loops_dict[parent]
-                    else:
-                        list.extend(loops_dict[parent])
-
 
     def finalize(self, filename):
         """Output the duplicate scripts detected."""
@@ -281,11 +285,12 @@ class DuplicateScripts():
             json.dump(self.all_customs_blocks, outfile)
         count = sum([len(listElem) for listElem in self.intra_dups_list])
         count = len(self.intra_dups_list)
-        result = ("\n{} intra-sprite duplicate scripts found\n".format(count))
+        result = ("\n" + str(self.number_total_blocks) + " total blocks found in all project\n")
+        result += ("{} intra-sprite duplicate scripts found\n".format(count))
         result += ("%d project-wide duplicate scripts found\n" %
                    len(self.project_dups_list))
-        result += (str(self.many_custom_blocks) + " custom blocks found in all project\n")
-        result += (str(self.many_custom_calls) + " custom blocks calls found in all project\n")
+        result += (str(self.total_custom_blocks) + " custom blocks found in all project\n")
+        result += (str(self.total_custom_calls) + " custom blocks calls found in all project\n")
         return result
 
 
