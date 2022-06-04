@@ -66,22 +66,6 @@ def get_next_blocks(start, block_dict):
     return b_inside_loop
 
 
-def get_custominfo(block):
-    """Extract information from custom blocks"""
-    try:
-        #list_blocks = get_custom_blocks(block["parent"], block_dict)
-        #print(list_blocks)
-        custom_info = {"type": "procedures_prototype",
-                "custom_name": block["mutation"]["proccode"],
-                "argument_names": block["mutation"]["argumentnames"],
-                "blocks": block["parent"], #list_blocks,
-                "n_calls": 0}
-        return custom_info
-    except KeyError:
-        # COMENTARLE A GREGORIO QUE HAY CASOS EN LOS QUE NO EXISTE EL PARENT
-        pass
-
-
 def change_blockid2opcode(sprite, opcode_dict, ignore_list, ignore):
     """Changes block id for opcode"""
     for block in sprite:
@@ -90,7 +74,6 @@ def change_blockid2opcode(sprite, opcode_dict, ignore_list, ignore):
                 block[j] = opcode_dict[block[j]]
             if ignore:
                 if block[j] in ignore_list and block[j] not in CONTROL_MARKS:
-                    # print("entré en un block que se tiene que ignorar")
                     block[j] = "IGNORED_BLOCK" # bloque ignorado, se debe eliminar o sencillamente ignorar ????
 
 
@@ -130,11 +113,48 @@ def add_loop_block(loops_dict, scripts_dict, sprite):
                 position = list.index(parent)
                 if position+1 != len(list):
                     del list[position+1]  # PARA BORRAR LOOP Q DUPLICA
-                    # list.pop(position+1)  # OTRA FORMA DE HACER LO DE ARRIBA
                     list[position+1:1] = loops_dict[parent]
                 else:
                     list.extend(loops_dict[parent])
     return scripts_dict
+
+
+def get_custominfo(block):
+    """Extract information from custom blocks"""
+    try:
+        #list_blocks = get_custom_blocks(block["parent"], block_dict)
+        #print(list_blocks)
+        custom_info = {"type": "procedures_prototype",
+                "custom_name": block["mutation"]["proccode"],
+                "argument_names": block["mutation"]["argumentnames"],
+                "blocks": block["parent"], #list_blocks,
+                "n_calls": 0}
+        return custom_info
+    except KeyError:
+        # COMENTARLE A GREGORIO QUE HAY CASOS EN LOS QUE NO EXISTE EL PARENT
+        pass
+
+
+
+def custom_was_called(block, custom_dict, sprite):
+
+    for j in custom_dict[sprite]:
+        if j["custom_name"] == block["mutation"]["proccode"]:
+            j["n_calls"] = j["n_calls"] + 1
+
+    return custom_dict
+
+
+def add_blocks_2custom(scripts_dict, custom_dict, sprite):
+
+    iterate = 0
+    while len(custom_dict[sprite]) != iterate:
+        j = 0
+        for j in custom_dict[sprite]:
+            for k in scripts_dict[sprite]:
+                if j["blocks"] in k:
+                    j["blocks"] = k
+        iterate += 1
 
 
 class DuplicateScripts():
@@ -144,23 +164,20 @@ class DuplicateScripts():
     """
 
     def __init__(self, ignoring):
-        self.ignoringisactive = ignoring
+        self.ignore = ignoring
         self.toplevel_list = []
         self.number_total_blocks = 0
         self.total_custom_blocks = 0
         self.total_custom_calls = 0
         self.all_customs_blocks = {}
+        self.ignore_list = blocks2ignore()
 
     def analyze(self, filename, json_project):
         """Start parsering it"""
-        total_blocks = {}  # block id -> block value
-        scripts_dict = {}
-        ignore_list = blocks2ignore()
-        custom_dict = {}
-        list_calls = []
-        list_customb = []
-        toplevel_list = []
 
+        scripts_dict = {}
+        custom_dict = {}
+        list_customb = []
         # Loops through all sprites (and canva/Stage "sprite" too)
         for sprites_dict in json_project["targets"]:
             self.blocks_dict = {}  # block id -> block value
@@ -171,76 +188,49 @@ class DuplicateScripts():
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
                     self.blocks_dict[blocks] = blocks_value
-                    total_blocks[blocks] = blocks_value
                     self.number_total_blocks += 1
-                    # Se hacen separados porque el orden es aleatorio y no quiero buscar un blockid y que no exista
-
             loops_dict = {}
             opcode_dict = {}   # block id -> block opcode. THIS IS FOR EACH SPRITE
             loop_list = []
-            existloop = False # EXISTE UN LOOP EN UN SPRITE ESPECÍFICO
             # Loops through all blocks within each sprite
             for block_id, block in self.blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
                 if block["opcode"] in LOOP_BLOCKS: # Caso de Loops
-                    existloop = True
                     loop_list = getloop_ids(block, self.blocks_dict, block_id)
-                    try:
-                        if block["parent"] is not None:
-                            loops_dict[block["parent"]] = loop_list
-                        else:
-                            # Este opcode del loop es parent
-                            scripts_dict[sprite].append(loop_list)
-                            toplevel_list.append(block_id)
-                    except KeyError:
-                        # En casos que no existiese el valor de parent. SERIA MUY RARO.
-                        print("QUE RARO. NO TIENE EL VALUE DE PARENT ESTE ELEMENTO: ", block["opcode"])
-                
+                    if block["parent"] is not None:
+                        loops_dict[block["parent"]] = loop_list
+                    else:
+                        scripts_dict[sprite].append(loop_list)
+                        self.toplevel_list.append(block_id) # Este opcode del loop es parent
+
                 # Caso de custom blocks
                 if block["opcode"] == "procedures_prototype":
                     custom_dict[sprite].append(get_custominfo(block))
                     self.total_custom_blocks += 1
                 elif block["opcode"] == "procedures_call":
                     self.total_custom_calls += 1
-                    list_calls.append({"type": "procedures_call",
-                                       "name": block["mutation"]["proccode"],
-                                       "argument_ids": block["mutation"]["argumentids"]})
-                    for call in list_calls:
-                            # print(call)
-                        for procedure in custom_dict[sprite]:
-                            if procedure["custom_name"] == call["name"] and procedure["type"] == "procedures_prototype":
-                                procedure["n_calls"] = procedure["n_calls"] + 1
-                    list_customb.append(custom_dict)
+                    list_customb.append(custom_was_called(block, custom_dict, sprite))
                 
                 # Caso de que sea topLevel.
                 if block["topLevel"] and block["opcode"] not in LOOP_BLOCKS:
                     sucesive_list = self.search_next([], block_id)
                     scripts_dict[sprite].append(sucesive_list)
-                    toplevel_list.append(block_id)
+                    self.toplevel_list.append(block_id)
             
             # Para agregar campo de bloques en cada custom
-            iterate = 0
-            while len(custom_dict[sprite]) != iterate:
-                j = 0
-                for j in custom_dict[sprite]:
-                    for k in scripts_dict[sprite]:
-                        if j["blocks"] in k:
-                            j["blocks"] = k
-                iterate += 1
+            add_blocks_2custom(scripts_dict, custom_dict, sprite)
 
-            if existloop:
+            if bool(loops_dict):
                 scripts_dict = add_loop_block(loops_dict, scripts_dict, sprite)
 
-            #print(scripts_dict[sprite])
-
             change_blockid2opcode(scripts_dict[sprite], opcode_dict,
-                                  ignore_list, self.ignoringisactive)
+                                  self.ignore_list, self.ignore)
  
         #print(scripts_dict)
         #print(custom_dict)
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
-        self.all_customs_blocks = {"name": filename.split(".")[0],
+        self.all_customs_blocks = {"name": filename,
                              "custom_blocks": list_customb,
                              "number_custom_blocks": self.total_custom_blocks,
                              "number_custom_blocks_calls": self.total_custom_calls}
@@ -280,7 +270,7 @@ class DuplicateScripts():
         with open(filename.replace('.json', '') + '-project.json',
                   'w') as outfile:
             json.dump(self.project_dups_list, outfile)
-        with open(filename.replace('.json', '') + '-customblocksinfo.json',
+        with open(filename.replace('.json', '') + '-customblocksproject.json',
                   'w') as outfile:
             json.dump(self.all_customs_blocks, outfile)
         count = sum([len(listElem) for listElem in self.intra_dups_list])
