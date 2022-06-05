@@ -99,5 +99,7 @@ if __name__ == "__main__":
                  "\n-i (OPTIONAL): Ignore blocks from IgnoreBlocks.txt\n")
     except FileNotFoundError:
         sys.exit("\nPlease, use a file that exists in your current directory\n")
+    except ModuleNotFoundError:
+        sys.exit("\nPlease, exceute: pip install -r requirements.txt\n")
     #except:
     #    sys.exit("\nSomething unexpected happened: ", sys.exc_info()[0])

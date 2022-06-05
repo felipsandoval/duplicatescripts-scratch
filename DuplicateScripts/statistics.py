@@ -45,6 +45,3 @@ def main(filename):
             print("  ", inv_blocks_dict[char])
     print()
     print("Different blocks:", len(list(c)))
-
-if __name__ == "__main__":
-    main(sys.argv[1])
