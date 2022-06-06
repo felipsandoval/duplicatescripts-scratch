@@ -9,6 +9,7 @@ import cluster
 import most_frequent_blocks
 
 import sys
+import os
 import shutil
 import json
 import zipfile
@@ -28,7 +29,7 @@ def sb3_json_extraction(fileIn):
         if fileName.endswith('.json'):
             json_file = zip_file.extract(fileName)
     json_project = json.loads(open(json_file).read())
-    # os.remove(fileOut) ver este tema en windows
+    #os.remove(fileOut)
     return json_project
 
 
@@ -108,4 +109,4 @@ if __name__ == "__main__":
         sys.exit("\nPlease, excecute: pip install -r requirements.txt\n")
     except:
         logging.critical(sys.exc_info())
-        sys.exit("\nSomething unexpected happened: ", sys.exc_info()[0])
+        sys.exit("\nSomething unexpected happened. View errors in file logs.txt")

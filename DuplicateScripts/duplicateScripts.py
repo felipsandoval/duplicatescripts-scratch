@@ -135,6 +135,11 @@ def get_custominfo(block):
         pass
 
 
+def cuboid_volume(l):
+    if type(l) not in [int, float]:
+        raise TypeError("The Length of cuboid can only be a valid integer or a float")
+    return (l*l*l)
+
 
 def custom_was_called(block, custom_dict, sprite):
 
