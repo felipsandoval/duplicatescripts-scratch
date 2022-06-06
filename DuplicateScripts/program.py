@@ -12,7 +12,7 @@ import sys
 import shutil
 import json
 import zipfile
-
+import logging # Módulo usado para almacenar ficheros detallados de logging
 
 def sb3_json_extraction(fileIn):
     """
@@ -50,8 +50,10 @@ def obtaining_json(filename):
         elif filename.endswith(".sb3"):
             json_file = sb3_json_extraction(filename)
     except FileNotFoundError:
+        logging.critical("File Not Found Error: File name does not exist or is not well written.")
         sys.exit("\nPlease, use a file that exists in directory\n")
     except:
+        logging.critical("File Not Valid: File extension can't be readed.")
         sys.exit("\nPlease, use a valid extension file like .SB3," +
                  " JSON or .ZIP\n")
     return json_file
@@ -83,8 +85,11 @@ def main(filename, ignoring):
             analyze(filename, ignoring, json_file, '.zip')
     else:
         analyze(filename, ignoring, json_project, '.json')
+    logging.info("The program works as expected.")
 
 if __name__ == "__main__":
+    logging.basicConfig(filename="log.txt", level=logging.DEBUG,
+                        format="%(asctime)s - %(levelname)s: %(message)s")
     try:
         if len(sys.argv) == 2:
             main(sys.argv[1], False)
@@ -94,12 +99,13 @@ if __name__ == "__main__":
         else:
             raise IndexError
     except IndexError:
+        logging.critical("Index Error: Number of arguments is not correct.")
         sys.exit("\nUsage: python3 duplicateScriptsApprox.py" +
                  " <file(.SB3 or .JSON or .ZIP)> [-i]\n" +
                  "\n-i (OPTIONAL): Ignore blocks from IgnoreBlocks.txt\n")
-    except FileNotFoundError:
-        sys.exit("\nPlease, use a file that exists in your current directory\n")
     except ModuleNotFoundError:
-        sys.exit("\nPlease, exceute: pip install -r requirements.txt\n")
-    #except:
-    #    sys.exit("\nSomething unexpected happened: ", sys.exc_info()[0])
+        logging.critical("Module Not Found Error: pip install -r requirements.txt")
+        sys.exit("\nPlease, excecute: pip install -r requirements.txt\n")
+    except:
+        logging.critical(sys.exc_info())
+        sys.exit("\nSomething unexpected happened: ", sys.exc_info()[0])
