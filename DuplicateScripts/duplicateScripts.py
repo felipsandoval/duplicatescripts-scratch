@@ -122,17 +122,24 @@ def add_loop_block(loops_dict, scripts_dict, sprite):
 def get_custominfo(block):
     """Extract information from custom blocks"""
     try:
-        #list_blocks = get_custom_blocks(block["parent"], block_dict)
-        #print(list_blocks)
         custom_info = {"type": "procedures_prototype",
                 "custom_name": block["mutation"]["proccode"],
                 "argument_names": block["mutation"]["argumentnames"],
+                #"topLevel": block["topLevel"], VER SI ESTO VALE LA PENA
                 "blocks": block["parent"], #list_blocks,
                 "n_calls": 0}
         return custom_info
     except KeyError:
+        custom_info = {"type": "procedures_prototype",
+                "custom_name": block["mutation"]["proccode"],
+                "argument_names": block["mutation"]["argumentnames"],
+                "blocks": "empty", #list_blocks,
+                "n_calls": 0}
+        return custom_info
         # COMENTARLE A GREGORIO QUE HAY CASOS EN LOS QUE NO EXISTE EL PARENT
-        pass
+        # puede ser un tema de la versión del projecto que estoy probando 
+        # es el testsb3.json
+        # pass
 
 
 def cuboid_volume(l):
@@ -154,7 +161,6 @@ def add_blocks_2custom(scripts_dict, custom_dict, sprite):
 
     iterate = 0
     while len(custom_dict[sprite]) != iterate:
-        j = 0
         for j in custom_dict[sprite]:
             for k in scripts_dict[sprite]:
                 if j["blocks"] in k:
@@ -223,7 +229,8 @@ class DuplicateScripts():
                     self.toplevel_list.append(block_id)
             
             # Para agregar campo de bloques en cada custom
-            add_blocks_2custom(scripts_dict, custom_dict, sprite)
+            if bool(custom_dict[sprite]):
+                add_blocks_2custom(scripts_dict, custom_dict, sprite)
 
             if bool(loops_dict):
                 scripts_dict = add_loop_block(loops_dict, scripts_dict, sprite)

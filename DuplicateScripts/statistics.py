@@ -5,7 +5,6 @@
 from collections import Counter, defaultdict
 import json
 import string
-import sys
 
 
 def json2dna(filename):
