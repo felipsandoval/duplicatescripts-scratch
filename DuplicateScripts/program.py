@@ -7,8 +7,8 @@ import duplicateScripts
 import statistics
 import cluster
 import most_frequent_blocks
-import traceback
 
+import traceback
 import sys
 import os
 import shutil

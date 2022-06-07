@@ -79,30 +79,26 @@ def change_blockid2opcode(sprite, opcode_dict, ignore_list, ignore):
 
 def getloop_ids(block_value, blocks_dict, block_id):
     """Extract blockids from loops and conditional blocks"""
-    try: 
-        loop_list = []
-        loop_list.append(block_id)
-        start = block_value["inputs"]["SUBSTACK"][1] # What happens if a loop does not have inputs nor substack value ? ALL OF THEM MUST HAVE THIS
-        if start is None:
-            return loop_list
-        b_inside_loop = get_next_blocks(start, blocks_dict)
-        loop_list.extend(b_inside_loop)
-        if block_value["opcode"] in CONDITIONALS:
-            loop_list.append("END_IF")
-            if block_value["opcode"] == "control_if_else":
-                start = block_value["inputs"]["SUBSTACK2"][1]
-                b_2_inside_loop = []
-                if start is not None:
-                    b_2_inside_loop = get_next_blocks(start, blocks_dict)
-                loop_list.extend(b_2_inside_loop)
-                loop_list.append("END_ELSE")
-            # No tengo porque regresar todo lo que precede al loop. Solamente lo de dentro!!! 
-            #loop_list.append("END_LOOP_CONDITIONAL")
-        loop_list.append("END_LOOP")
+    loop_list = []
+    loop_list.append(block_id)
+    start = block_value["inputs"]["SUBSTACK"][1] # What happens if a loop does not have inputs nor substack value ? ALL OF THEM MUST HAVE THIS
+    if start is None:
         return loop_list
-    except KeyError:
-        print("HAY UN ERROR REVISAR ESTOOOO")
-        return loop_list
+    b_inside_loop = get_next_blocks(start, blocks_dict)
+    loop_list.extend(b_inside_loop)
+    if block_value["opcode"] in CONDITIONALS:
+        loop_list.append("END_IF")
+        if block_value["opcode"] == "control_if_else":
+            start = block_value["inputs"]["SUBSTACK2"][1]
+            b_2_inside_loop = []
+            if start is not None:
+                b_2_inside_loop = get_next_blocks(start, blocks_dict)
+            loop_list.extend(b_2_inside_loop)
+            loop_list.append("END_ELSE")
+        # No tengo porque regresar todo lo que precede al loop. Solamente lo de dentro!!! 
+        #loop_list.append("END_LOOP_CONDITIONAL")
+    loop_list.append("END_LOOP")
+    return loop_list
 
 
 def add_loop_block(loops_dict, scripts_dict, sprite):
