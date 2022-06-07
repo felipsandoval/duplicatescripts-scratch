@@ -5,9 +5,6 @@
 from difflib import SequenceMatcher
 import json
 from textwrap import wrap
-# import os "Esto para limpiar" un poco las carpetas que se crean.
-# Ver compatibilidad para Windows
-
 
 N_BLOCKS = 6 # Minimo numero de bloques para que se considere como duplicado
 
@@ -48,7 +45,6 @@ def blocks2ignore():
 def get_next_blocks(start, block_dict):
     """Get the next block_ids"""
     # SPECIAL CASE: there is only a single block inside a loop 
-    # or to list a condition
     next_block_id = block_dict[start]["next"]
     b_inside_loop = []
     b_inside_loop.append(start)
@@ -95,7 +91,6 @@ def getloop_ids(block_value, blocks_dict, block_id):
                 b_2_inside_loop = get_next_blocks(start, blocks_dict)
             loop_list.extend(b_2_inside_loop)
             loop_list.append("END_ELSE")
-        # No tengo porque regresar todo lo que precede al loop. Solamente lo de dentro!!! 
         #loop_list.append("END_LOOP_CONDITIONAL")
     loop_list.append("END_LOOP")
     return loop_list
@@ -209,28 +204,23 @@ class DuplicateScripts():
                     else:
                         scripts_dict[sprite].append(loop_list)
                         self.toplevel_list.append(block_id) # Este opcode del loop es parent
-
                 # Caso de custom blocks
                 if block["opcode"] == "procedures_prototype":
                     custom_dict[sprite].append(get_custominfo(block))
                     self.total_custom_blocks += 1
                 elif block["opcode"] == "procedures_call":
                     self.total_custom_calls += 1
-                    list_customb.append(custom_was_called(block, custom_dict, sprite))
-                
+                    list_customb.append(custom_was_called(block, custom_dict, sprite))   
                 # Caso de que sea topLevel.
                 if block["topLevel"] and block["opcode"] not in LOOP_BLOCKS:
                     sucesive_list = self.search_next([], block_id)
                     scripts_dict[sprite].append(sucesive_list)
                     self.toplevel_list.append(block_id)
-            
             # Para agregar campo de bloques en cada custom
             if bool(custom_dict[sprite]):
                 add_blocks_2custom(scripts_dict, custom_dict, sprite)
-
             if bool(loops_dict):
                 scripts_dict = add_loop_block(loops_dict, scripts_dict, sprite)
-
             change_blockid2opcode(scripts_dict[sprite], opcode_dict,
                                   self.ignore_list, self.ignore)
  
@@ -299,8 +289,7 @@ def main(filename, json_file, ignoring):
     """
     duplicate = DuplicateScripts(ignoring)
     print("\n-- STARTING DUPLICATESCRIPTS.PY SCRIPT --\n")
-    print("Looking for duplicate blocks in", filename)
-    print()
+    print("Looking for duplicate blocks in", filename, "\n")
     duplicate.analyze(filename, json_file)
     print("Minimum number of blocks: ", N_BLOCKS)
     print(duplicate.finalize(filename))
