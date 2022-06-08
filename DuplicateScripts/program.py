@@ -67,6 +67,10 @@ def analyze(filename, ignoring, json_content):
     print("\n-- STARTING CLUSTER.PY SCRIPT --\n")
     cluster.main(json_content)
     print("\n-- END OF CLUSTER.PY SCRIPT --\n")
+    # POR ELIMINAR FICHEROS Y NO QUEDE TANTO LIO
+    os.remove(spritefile)
+    os.remove(projectfile)
+    os.remove(filename.split(".")[0] + '-customblocksproject.json')
 
 
 def main(filename, ignoring):
