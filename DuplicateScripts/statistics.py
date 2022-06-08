@@ -16,7 +16,8 @@ def json2dna(filename):
     blocks_dict = json.loads(open('blocks.json').read())  # block -> char
     characters = string.ascii_letters + string.punctuation + string.digits
     characters += "€£ñÑçÇáÁéÉíÍóÓúÚäÄëËïÏöÖüÜàÀèÈìÌòÒùÙâÂêÊîÎôÔûÛ¶§©ŠØ®ГДЕЖИЛśĥčýÿў±žПШΘЯбψξλσαβδ"
-    duplicates = json.loads(open(filename).read())
+    #duplicates = json.loads(open(filename).read())
+    duplicates = filename
     if not duplicates:
         return (None, None)
     for script in duplicates:
