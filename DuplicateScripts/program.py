@@ -30,7 +30,8 @@ def sb3_json_extraction(fileIn):
         if fileName.endswith('.json'):
             json_file = zip_file.extract(fileName)
     json_project = json.loads(open(json_file).read())
-    #os.remove(fileOut)
+    zip_file.close()
+    os.remove(fileOut) # Para eliminar el .zip que se crea.
     return json_project
 
 
@@ -53,12 +54,12 @@ def obtaining_json(filename):
     return json_file
 
 
-def analyze(filename, ignoring, json, type_of_file):
+def analyze(filename, ignoring, json):
     """Analizing process"""
     duplicateScripts.main(filename, json, ignoring)
     most_frequent_blocks.main(json)
-    spritefile = filename.replace(type_of_file, '') + '-sprite.json'
-    projectfile = filename.replace(type_of_file, '') + '-project.json'
+    spritefile = filename.replace("." + filename.split(".")[1], '') + '-sprite.json'
+    projectfile = filename.replace("." + filename.split(".")[1], '') + '-project.json'
     print("\n-- GETTING INTRA SPRITE STATISTICS --\n")
     statistics.main(spritefile)
     print("\n-- GETTING INTRA PROJECT STATISTICS --\n")
@@ -76,9 +77,9 @@ def main(filename, ignoring):
         # Ahondar un poco más en casos donde se tengan que hacer un montón de ficheros
         for i in json_project:
             json_file = json.loads(open(i).read())
-            analyze(filename, ignoring, json_file, '.zip')
+            analyze(filename, ignoring, json_file)
     else:
-        analyze(filename, ignoring, json_project, '.json')
+        analyze(filename, ignoring, json_project)
     logging.info("The program works as expected.")
 
 if __name__ == "__main__":

@@ -262,13 +262,13 @@ class DuplicateScripts():
 
     def finalize(self, filename):
         """Output the duplicate scripts detected."""
-        with open(filename.replace('.json', '') + '-sprite.json',
+        with open(filename + '-sprite.json',
                   'w') as outfile:
             json.dump(self.intra_dups_list, outfile)
-        with open(filename.replace('.json', '') + '-project.json',
+        with open(filename + '-project.json',
                   'w') as outfile:
             json.dump(self.project_dups_list, outfile)
-        with open(filename.replace('.json', '') + '-customblocksproject.json',
+        with open(filename + '-customblocksproject.json',
                   'w') as outfile:
             json.dump(self.all_customs_blocks, outfile)
         count = sum([len(listElem) for listElem in self.intra_dups_list])
@@ -292,7 +292,7 @@ def main(filename, json_file, ignoring):
     print("Looking for duplicate blocks in", filename, "\n")
     duplicate.analyze(filename, json_file)
     print("Minimum number of blocks: ", N_BLOCKS)
-    print(duplicate.finalize(filename))
+    print(duplicate.finalize(filename.split(".")[0]))
     # Una buena forma de depurar es comprobar la cantidad de elementos presentes en el array de blocks (numero total de bloques) y luego compararlo con la estructura obtenida. 
     # Deben coincidir en número 
     print("\n-- END OF DUPLICATESCRIPTS.PY SCRIPT --\n")
