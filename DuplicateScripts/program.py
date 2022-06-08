@@ -54,18 +54,18 @@ def obtaining_json(filename):
     return json_file
 
 
-def analyze(filename, ignoring, json):
+def analyze(filename, ignoring, json_content):
     """Analizing process"""
-    duplicateScripts.main(filename, json, ignoring)
-    most_frequent_blocks.main(json)
+    duplicateScripts.main(filename, json_content, ignoring)
+    most_frequent_blocks.main(json_content)
     spritefile = filename.replace("." + filename.split(".")[1], '') + '-sprite.json'
     projectfile = filename.replace("." + filename.split(".")[1], '') + '-project.json'
     print("\n-- GETTING INTRA SPRITE STATISTICS --\n")
-    statistics.main(spritefile)
+    statistics.main(json.loads(open(spritefile).read()))
     print("\n-- GETTING INTRA PROJECT STATISTICS --\n")
-    statistics.main(projectfile)
+    statistics.main(json.loads(open(projectfile).read()))
     print("\n-- STARTING CLUSTER.PY SCRIPT --\n")
-    cluster.main(filename)
+    cluster.main(json_content)
     print("\n-- END OF CLUSTER.PY SCRIPT --\n")
 
 
