@@ -4,7 +4,6 @@
 
 from difflib import SequenceMatcher
 import json
-from textwrap import wrap
 
 N_BLOCKS = 6 # Minimo numero de bloques para que se considere como duplicado
 
