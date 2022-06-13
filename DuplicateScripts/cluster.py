@@ -4,7 +4,6 @@
 
 from collections import Counter
 from statistics import json2dna
-import sys
 import distance
 import numpy as np
 import sklearn
