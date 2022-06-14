@@ -70,7 +70,7 @@ def analyze(filename, ignoring, json_content):
     # POR ELIMINAR FICHEROS Y NO QUEDE TANTO LIO
     os.remove(spritefile)
     os.remove(projectfile)
-    os.remove(filename.split(".")[0] + '-customblocksproject.json')
+    os.remove(filename.split(".")[0] + '-custom.json')
 
 
 def main(filename, ignoring):

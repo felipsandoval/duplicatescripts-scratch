@@ -267,7 +267,7 @@ class DuplicateScripts():
         with open(filename + '-project.json',
                   'w') as outfile:
             json.dump(self.project_dups_list, outfile)
-        with open(filename + '-customblocksproject.json',
+        with open(filename + '-custom.json',
                   'w') as outfile:
             json.dump(self.all_customs_blocks, outfile)
         count = sum([len(listElem) for listElem in self.intra_dups_list])
