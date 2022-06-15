@@ -15,7 +15,8 @@ def json2dna(duplicates):
     scripts = []
     blocks_dict = json.loads(open('blocks.json').read())  # block -> char
     characters = string.ascii_letters + string.punctuation + string.digits
-    characters += "€£ñÑçÇáÁéÉíÍóÓúÚäÄëËïÏöÖüÜàÀèÈìÌòÒùÙâÂêÊîÎôÔûÛ¶§©ŠØ®ГДЕЖИЛśĥčýÿў±žПШΘЯбψξλσαβδ"
+    characters += "€£ñÑçÇáÁéÉíÍóÓúÚäÄëËïÏöÖüÜàÀèÈìÌò\
+                   ÒùÙâÂêÊîÎôÔûÛ¶§©ŠØ®ГДЕЖИЛśĥčýÿў±žПШΘЯбψξλσαβδ"
     if not bool(duplicates):
         return (None, None)
     for script in duplicates:
@@ -34,7 +35,6 @@ def main(filename):
         return None
     inv_blocks_dict = {v: k for k, v in blocks_dict.items()}
     c = Counter(tuple(scripts))
-    # print(c)
     most_common = c.most_common(10)
     print("10 most common:")
     for most in most_common:

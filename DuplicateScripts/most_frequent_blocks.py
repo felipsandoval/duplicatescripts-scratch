@@ -13,11 +13,9 @@ def main(json_project):
     """
     d = defaultdict(int)
     ordered_words = OrderedDict()
-
     characters = string.ascii_letters + string.punctuation + string.digits
     characters += "€£ñÑçÇáÁéÉíÍóÓúÚäÄëËïÏöÖüÜàÀèÈìÌò\
                    ÒùÙâÂêÊîÎôÔûÛ¶§©ŠØ®ГДЕЖИЛśĥčýÿў±žПШΘЯбψξλσαβδ"
-
     # Loops through all sprites
     for sprites_dict in json_project["targets"]:
         for blocks, blocks_value in sprites_dict["blocks"].items():
