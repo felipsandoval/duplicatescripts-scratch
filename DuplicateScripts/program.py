@@ -2,19 +2,21 @@
 # -*- coding: utf-8 -*-
 # Github: @felipsandoval
 
-# My Scripts / Libraries 
+# My Scripts
 import duplicateScripts
 import statistics
 import cluster
 import most_frequent_blocks
 
+# Modules used
 import traceback
 import sys
 import os
 import shutil
 import json
 import zipfile
-import logging # Módulo usado para almacenar ficheros detallados de logging
+import logging  # Module used to store detailed events in a log file
+
 
 def sb3_json_extraction(fileIn):
     """
@@ -31,7 +33,7 @@ def sb3_json_extraction(fileIn):
             json_file = zip_file.extract(fileName)
     json_project = json.loads(open(json_file).read())
     zip_file.close()
-    os.remove(fileOut) # Para eliminar el .zip que se crea.
+    os.remove(fileOut)  # Deletes the created ZIP file
     return json_project
 
 
@@ -39,12 +41,11 @@ def obtaining_json(filename):
     """Obtains JSON file from different extentions"""
     json_files_list = []
     if filename.endswith(".zip"):
-        # Creates a list with all JSON filenames
+        # Creates a list with all JSON within the extention
         zip_file = zipfile.ZipFile(filename, "r")
         list_filenames = zip_file.namelist()
         for file in list_filenames:
             if file.endswith('.json'):
-                # zip_file.extract(file)
                 json_files_list.append(file)
             return json_files_list
     elif filename.endswith(".json"):
@@ -54,12 +55,14 @@ def obtaining_json(filename):
     return json_file
 
 
-def analyze(filename, ignoring, json_content):
-    """Analizing process"""
+def main(filename, ignoring, json_content):
+    """The main thread of execution for my software"""
     duplicateScripts.main(filename, json_content, ignoring)
     most_frequent_blocks.main(json_content)
-    spritefile = filename.replace("." + filename.split(".")[1], '') + '-sprite.json'
-    projectfile = filename.replace("." + filename.split(".")[1], '') + '-project.json'
+    spritefile = filename.replace("." + filename.split(".")[1], '')\
+        + '-sprite.json'
+    projectfile = filename.replace("." + filename.split(".")[1], '')\
+        + '-project.json'
     print("\n-- GETTING INTRA SPRITE STATISTICS --\n")
     statistics.main(json.loads(open(spritefile).read()))
     print("\n-- GETTING INTRA PROJECT STATISTICS --\n")
@@ -67,34 +70,35 @@ def analyze(filename, ignoring, json_content):
     print("\n-- STARTING CLUSTER.PY SCRIPT --\n")
     cluster.main(json_content)
     print("\n-- END OF CLUSTER.PY SCRIPT --\n")
-    # POR ELIMINAR FICHEROS Y NO QUEDE TANTO LIO
     os.remove(spritefile)
     os.remove(projectfile)
+    print(filename)
     os.remove(filename.split(".")[0] + '-custom.json')
 
 
-def main(filename, ignoring):
-    """MAIN PROGRAM"""
+def start(filename, ignoring):
+    """The first steps to obtain information from filename"""
     print("\n*** STARTING ANALYSIS ***\n")
     json_project = obtaining_json(filename)
     if filename.endswith('.zip'):
-        # Ahondar un poco más en casos donde se tengan que hacer un montón de ficheros
+        # Still in need to be tested in multiple files
         for i in json_project:
             json_file = json.loads(open(i).read())
-            analyze(filename, ignoring, json_file)
+            main(filename, ignoring, json_file)
     else:
-        analyze(filename, ignoring, json_project)
+        main(filename, ignoring, json_project)
     logging.info("The program works as expected.")
+
 
 if __name__ == "__main__":
     logging.basicConfig(filename="program_logs.txt", level=logging.DEBUG,
                         format="%(asctime)s - %(levelname)s: %(message)s")
     try:
         if len(sys.argv) == 2:
-            main(sys.argv[1], False)
+            start(sys.argv[1], False)
         elif len(sys.argv) == 3 and str(sys.argv[2]) == "-i":
             print("\nYou are now ignoring blocks\n")
-            main(sys.argv[1], True)
+            start(sys.argv[1], True)
         else:
             raise IndexError
     except IndexError:
@@ -103,11 +107,14 @@ if __name__ == "__main__":
                  " <file(.SB3 or .JSON or .ZIP)> [-i]\n" +
                  "\n-i (OPTIONAL): Ignore blocks from IgnoreBlocks.txt\n")
     except FileNotFoundError:
-        logging.critical("File Not Found Error: File name does not exist or is not well written.")
+        logging.critical("File Not Found Error: " +
+                         "File name does not exist or is not well written.")
         sys.exit("\nPlease, use a file that exists in directory\n")
     except ModuleNotFoundError:
-        logging.critical("Module Not Found Error: pip install -r requirements.txt")
+        logging.critical("Module Not Found Error:" +
+                         "pip install -r requirements.txt")
         sys.exit("\nPlease, excecute: pip install -r requirements.txt\n")
     except:
         logging.critical(traceback.format_exc())
-        sys.exit("\nSomething unexpected happened. View errors in file logs.txt")
+        sys.exit("\nSomething unexpected happened. " +
+                 "Check errors in file logs.txt")
