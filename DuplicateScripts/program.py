@@ -77,7 +77,7 @@ def main(filename, ignoring, json_content):
 
 def start(filename, ignoring):
     """The first steps to obtain information from filename"""
-    print("\n*** STARTING ANALYSIS ***\n")
+    print("\n*** STARTING ANALYSIS  ***\n")
     json_project = obtaining_json(filename)
     if filename.endswith('.zip'):
         # Still in need to be tested in multiple files

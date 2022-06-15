@@ -15,19 +15,19 @@ def main(json_project):
     ordered_words = OrderedDict()
 
     characters = string.ascii_letters + string.punctuation + string.digits
-    characters += "€£ñÑçÇáÁéÉíÍóÓúÚäÄëËïÏöÖüÜàÀèÈìÌòÒùÙâÂêÊîÎôÔûÛ¶§©ŠØ®ГДЕЖИЛśĥčýÿў±žПШΘЯбψξλσαβδ"
+    characters += "€£ñÑçÇáÁéÉíÍóÓúÚäÄëËïÏöÖüÜàÀèÈìÌò\
+                   ÒùÙâÂêÊîÎôÔûÛ¶§©ŠØ®ГДЕЖИЛśĥčýÿў±žПШΘЯбψξλσαβδ"
 
-    # Itera sobre todos los objetos
+    # Loops through all sprites
     for sprites_dict in json_project["targets"]:
-        # Obtiene todos los bloques de cada objeto
         for blocks, blocks_value in sprites_dict["blocks"].items():
             try:
-                # Counting each opcode from all sprites
+                # Counting each opcode from every sprites
                 d[blocks_value['opcode']] += 1
             except TypeError:
                 print("Error message: Check this out. Special case")
                 pass
-    # Para ordenar los opcodes desde el menos al más frecuente
+    # Ordering opcodes from least to most frequent
     most_frequent = sorted(d.items(), key=lambda kv: kv[1], reverse=True)
     for block, frequency in most_frequent:
         ordered_words[block] = characters[len(ordered_words)]
