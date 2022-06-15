@@ -175,7 +175,6 @@ class DuplicateScripts():
 
     def analyze(self, filename, json_project):
         """Start parsering it"""
-
         scripts_dict = {}
         custom_dict = {}
         list_customb = []
