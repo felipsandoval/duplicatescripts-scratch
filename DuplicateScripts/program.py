@@ -115,7 +115,7 @@ if __name__ == "__main__":
         sys.exit("\nPlease, execute: pip install -r requirements.txt\n")
     except KeyboardInterrupt:
         logging.critical("User endend execution.")
-        sys.exit("\nYou interrupted execution. Goodbye.\n")
+        sys.exit("\nExecution interrupted by keyboard. Goodbye.\n")
     except:
         logging.critical(traceback.format_exc())
         sys.exit("\nSomething unexpected happened. " +
