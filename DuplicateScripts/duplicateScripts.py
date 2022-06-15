@@ -5,11 +5,13 @@
 from difflib import SequenceMatcher
 import json
 
-N_BLOCKS = 6 # Minimo numero de bloques para que se considere como duplicado
+N_BLOCKS = 6  # Minium number of blocks to be consider as duplicated
 
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
                "control_if_else", "control_repeat_until"]
+
 CONDITIONALS = ["control_if", "control_if_else", "control_repeat_until"]
+
 CONTROL_MARKS = ["END_LOOP", "END_IF", "END_ELSE", "END_LOOP_CONDITIONAL"]
 
 
@@ -43,7 +45,7 @@ def blocks2ignore():
 
 def get_next_blocks(start, block_dict):
     """Get the next block_ids"""
-    # SPECIAL CASE: there is only a single block inside a loop 
+    # SPECIAL CASE: there is only a single block inside a loop
     next_block_id = block_dict[start]["next"]
     b_inside_loop = []
     b_inside_loop.append(start)
@@ -69,14 +71,16 @@ def change_blockid2opcode(sprite, opcode_dict, ignore_list, ignore):
                 block[j] = opcode_dict[block[j]]
             if ignore:
                 if block[j] in ignore_list and block[j] not in CONTROL_MARKS:
-                    block[j] = "IGNORED_BLOCK" # bloque ignorado, se debe eliminar o sencillamente ignorar ????
+                    block[j] = "IGNORED_BLOCK"
+                    # Se debe eliminar o sencillamente ignorar. control marks?
 
 
 def getloop_ids(block_value, blocks_dict, block_id):
     """Extract blockids from loops and conditional blocks"""
     loop_list = []
     loop_list.append(block_id)
-    start = block_value["inputs"]["SUBSTACK"][1] # What happens if a loop does not have inputs nor substack value ? ALL OF THEM MUST HAVE THIS
+    start = block_value["inputs"]["SUBSTACK"][1]
+    # What happens if a loop does not have inputs nor substack value ?
     if start is None:
         return loop_list
     b_inside_loop = get_next_blocks(start, blocks_dict)
@@ -90,7 +94,6 @@ def getloop_ids(block_value, blocks_dict, block_id):
                 b_2_inside_loop = get_next_blocks(start, blocks_dict)
             loop_list.extend(b_2_inside_loop)
             loop_list.append("END_ELSE")
-        #loop_list.append("END_LOOP_CONDITIONAL")
     loop_list.append("END_LOOP")
     return loop_list
 
@@ -113,25 +116,22 @@ def get_custominfo(block):
     """Extract information from custom blocks"""
     try:
         custom_info = {"type": "procedures_prototype",
-                "custom_name": block["mutation"]["proccode"],
-                "argument_names": block["mutation"]["argumentnames"],
-                #"topLevel": block["topLevel"], VER SI ESTO VALE LA PENA
-                "blocks": block["parent"], #list_blocks,
-                "n_calls": 0}
+                       "custom_name": block["mutation"]["proccode"],
+                       "argument_names": block["mutation"]["argumentnames"],
+                       # "topLevel": block["topLevel"] worth ?
+                       "blocks": block["parent"],  # list_blocks,
+                       "n_calls": 0}
         return custom_info
     except KeyError:
         custom_info = {"type": "procedures_prototype",
-                "custom_name": block["mutation"]["proccode"],
-                "argument_names": block["mutation"]["argumentnames"],
-                "blocks": "empty", #list_blocks,
-                "n_calls": 0}
+                       "custom_name": block["mutation"]["proccode"],
+                       "argument_names": block["mutation"]["argumentnames"],
+                       "blocks": "empty",
+                       "n_calls": 0}
         return custom_info
-        # COMENTARLE A GREGORIO QUE HAY CASOS EN LOS QUE NO EXISTE EL PARENT
-        # puede ser un tema de la versión del projecto que estoy probando 
-        # es el testsb3.json
-        # pass
 
 
+# For practicing unittests
 def cuboid_volume(l):
     if type(l) not in [int, float]:
         raise TypeError("The Length of cuboid can only be a valid integer or a float")
@@ -167,7 +167,7 @@ class DuplicateScripts():
     def __init__(self, ignoring):
         self.ignore = ignoring
         self.toplevel_list = []
-        self.number_total_blocks = 0
+        self.total_blocks = 0
         self.total_custom_blocks = 0
         self.total_custom_calls = 0
         self.all_customs_blocks = {}
@@ -178,7 +178,7 @@ class DuplicateScripts():
         scripts_dict = {}
         custom_dict = {}
         list_customb = []
-        # Loops through all sprites (and canva/Stage "sprite" too)
+        # Loops through all sprites
         for sprites_dict in json_project["targets"]:
             self.blocks_dict = {}  # block id -> block value
             sprite = sprites_dict["name"]
@@ -188,48 +188,45 @@ class DuplicateScripts():
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
                     self.blocks_dict[blocks] = blocks_value
-                    self.number_total_blocks += 1
+                    self.total_blocks += 1
             loops_dict = {}
-            opcode_dict = {}   # block id -> block opcode. THIS IS FOR EACH SPRITE
+            opcode_dict = {}   # block id -> block opcode.
             loop_list = []
             # Loops through all blocks within each sprite
             for block_id, block in self.blocks_dict.items():
                 opcode_dict[block_id] = block["opcode"]
-                if block["opcode"] in LOOP_BLOCKS: # Caso de Loops
+                if block["opcode"] in LOOP_BLOCKS:
                     loop_list = getloop_ids(block, self.blocks_dict, block_id)
                     if block["parent"] is not None:
                         loops_dict[block["parent"]] = loop_list
                     else:
                         scripts_dict[sprite].append(loop_list)
-                        self.toplevel_list.append(block_id) # Este opcode del loop es parent
-                # Caso de custom blocks
-                if block["opcode"] == "procedures_prototype":
+                        self.toplevel_list.append(block_id)  # opcode from loop is parent
+                elif block["opcode"] == "procedures_prototype":
                     custom_dict[sprite].append(get_custominfo(block))
                     self.total_custom_blocks += 1
                 elif block["opcode"] == "procedures_call":
                     self.total_custom_calls += 1
-                    list_customb.append(custom_was_called(block, custom_dict, sprite))   
-                # Caso de que sea topLevel.
+                    list_customb.append(custom_was_called(block,
+                                                          custom_dict, sprite))
                 if block["topLevel"] and block["opcode"] not in LOOP_BLOCKS:
                     sucesive_list = self.search_next([], block_id)
                     scripts_dict[sprite].append(sucesive_list)
                     self.toplevel_list.append(block_id)
-            # Para agregar campo de bloques en cada custom
+            # Add blocks to custom
             if bool(custom_dict[sprite]):
                 add_blocks_2custom(scripts_dict, custom_dict, sprite)
+            # Add blocks to loops
             if bool(loops_dict):
                 scripts_dict = add_loop_block(loops_dict, scripts_dict, sprite)
             change_blockid2opcode(scripts_dict[sprite], opcode_dict,
                                   self.ignore_list, self.ignore)
- 
-        #print(scripts_dict)
-        #print(custom_dict)
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
         self.all_customs_blocks = {"name": filename,
-                             "custom_blocks": list_customb,
-                             "number_custom_blocks": self.total_custom_blocks,
-                             "number_custom_blocks_calls": self.total_custom_calls}
+                                   "custom_blocks": list_customb,
+                                   "number_custom_blocks": self.total_custom_blocks,
+                                   "number_custom_blocks_calls": self.total_custom_calls}
 
     def get_dup_intra_sprite(self, scripts_dict):
         """Finds intra-sprite duplication"""
@@ -257,7 +254,6 @@ class DuplicateScripts():
             block_list = self.search_next(block_list, block_id)
         return block_list
 
-
     def finalize(self, filename):
         """Output the duplicate scripts detected."""
         with open(filename + '-sprite.json',
@@ -271,12 +267,15 @@ class DuplicateScripts():
             json.dump(self.all_customs_blocks, outfile)
         count = sum([len(listElem) for listElem in self.intra_dups_list])
         count = len(self.intra_dups_list)
-        result = ("\n" + str(self.number_total_blocks) + " total blocks found in all project\n")
+        result = ("\n" + str(self.total_blocks) +
+                  " total blocks found in all project\n")
         result += ("{} intra-sprite duplicate scripts found\n".format(count))
         result += ("%d project-wide duplicate scripts found\n" %
                    len(self.project_dups_list))
-        result += (str(self.total_custom_blocks) + " custom blocks found in all project\n")
-        result += (str(self.total_custom_calls) + " custom blocks calls found in all project\n")
+        result += (str(self.total_custom_blocks) +
+                   " custom blocks found in all project\n")
+        result += (str(self.total_custom_calls) +
+                   " custom blocks calls found in all project\n")
         return result
 
 
@@ -291,6 +290,4 @@ def main(filename, json_file, ignoring):
     duplicate.analyze(filename, json_file)
     print("Minimum number of blocks: ", N_BLOCKS)
     print(duplicate.finalize(filename.split(".")[0]))
-    # Una buena forma de depurar es comprobar la cantidad de elementos presentes en el array de blocks (numero total de bloques) y luego compararlo con la estructura obtenida. 
-    # Deben coincidir en número 
     print("\n-- END OF DUPLICATESCRIPTS.PY SCRIPT --\n")
