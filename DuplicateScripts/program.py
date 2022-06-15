@@ -72,7 +72,6 @@ def main(filename, ignoring, json_content):
     print("\n-- END OF CLUSTER.PY SCRIPT --\n")
     os.remove(spritefile)
     os.remove(projectfile)
-    print(filename)
     os.remove(filename.split(".")[0] + '-custom.json')
 
 
@@ -87,7 +86,7 @@ def start(filename, ignoring):
             main(filename, ignoring, json_file)
     else:
         main(filename, ignoring, json_project)
-    logging.info("The program works as expected.")
+    logging.info("Program works as expected.")
 
 
 if __name__ == "__main__":
@@ -113,7 +112,10 @@ if __name__ == "__main__":
     except ModuleNotFoundError:
         logging.critical("Module Not Found Error:" +
                          "pip install -r requirements.txt")
-        sys.exit("\nPlease, excecute: pip install -r requirements.txt\n")
+        sys.exit("\nPlease, execute: pip install -r requirements.txt\n")
+    except KeyboardInterrupt:
+        logging.critical("User endend execution.")
+        sys.exit("\nYou interrupted execution. Goodbye.\n")
     except:
         logging.critical(traceback.format_exc())
         sys.exit("\nSomething unexpected happened. " +
