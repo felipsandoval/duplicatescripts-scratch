@@ -119,4 +119,4 @@ if __name__ == "__main__":
     except:
         logging.critical(traceback.format_exc())
         sys.exit("\nSomething unexpected happened. " +
-                 "Check errors in file logs.txt")
+                 "Check errors in file program_logs.txt")
