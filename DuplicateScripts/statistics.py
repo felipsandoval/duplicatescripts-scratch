@@ -6,6 +6,7 @@ from collections import Counter, defaultdict
 import json
 import string
 
+CONTROL_MARKS = ["END_LOOP", "END_IF", "END_ELSE", "END_LOOP_CONDITIONAL"]
 
 def json2dna(duplicates):
     """
@@ -22,10 +23,21 @@ def json2dna(duplicates):
     for script in duplicates:
         block_list = []
         for block in script:
+            #if block not in CONTROL_MARKS: -> ask this to Grex
             if block not in blocks_dict:
+                #print(block)
                 blocks_dict[block] = characters[len(blocks_dict)]
             block_list.append(blocks_dict[block])
         scripts.append(''.join(block_list))
+    print("AQUI BLOCK LIST")
+    print(block_list)
+    print("AQUI BLOCK LIST")
+    print("AQUI BLOCK DICT")
+    print(blocks_dict)
+    print("AQUI BLOCK DICT")
+    print("AQUI SPRITES")
+    print(scripts)
+    print("AQUI SPRITES")
     return(scripts, blocks_dict)
 
 
