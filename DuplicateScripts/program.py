@@ -97,7 +97,7 @@ def start(filename, ignoring):
                 main(filename, ignoring, json_file)
                 #os.remove(i) si estoy uno a uno
             except duplicateScripts.NextFile:
-                logging.critical("FILE ", i, " HAS AN KEYERROR. CHECK DEEPLY")
+                logging.info("FILE " + i + " HAS AN KEYERROR. CHECK DEEPLY")
                 print("FILE: ", i, " HAS AN ERROR.")
                 print("\n---- CLOSING FILE FROM ZIP ", i ,"  ----\n")
                 pass
