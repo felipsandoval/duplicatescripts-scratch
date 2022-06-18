@@ -5,7 +5,7 @@
 from difflib import SequenceMatcher
 import json
 
-N_BLOCKS = 6  # Minium number of blocks to be consider as duplicated
+N_BLOCKS = 6  # Minimum number of blocks to be consider as duplicated
 
 LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
                "control_if_else", "control_repeat_until"]
@@ -13,10 +13,6 @@ LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
 CONDITIONALS = ["control_if", "control_if_else", "control_repeat_until"]
 
 CONTROL_MARKS = ["END_LOOP", "END_IF", "END_ELSE", "END_LOOP_CONDITIONAL"]
-
-class NextFile(Exception):
-    #print("A file corrupted. Starting with next one.")
-    pass
 
 def find_dups(blocks):
     """
@@ -132,16 +128,12 @@ def get_custominfo(block):
         custom_info = {"type": "procedures_prototype",
                        "custom_name": block["mutation"]["proccode"],
                        "argument_names": block["mutation"]["argumentnames"],
-                       # "topLevel": block["topLevel"] worth ?
-                       "blocks": block["parent"],  # list_blocks,
                        "n_calls": 0}
+                       # "topLevel": block["topLevel"] worth ?
+        custom_info.update({"blocks": block["parent"]})
         return custom_info
     except KeyError:
-        custom_info = {"type": "procedures_prototype",
-                       "custom_name": block["mutation"]["proccode"],
-                       "argument_names": block["mutation"]["argumentnames"],
-                       "blocks": "empty",
-                       "n_calls": 0}
+        custom_info.update({"blocks": "empty"})
         return custom_info
 
 
@@ -163,6 +155,10 @@ def add_blocks_2custom(scripts_dict, custom_dict, sprite):
                 if j["blocks"] in k:
                     j["blocks"] = k
         iterate += 1
+
+
+class NextFile(Exception):
+    pass
 
 
 class DuplicateScripts():
@@ -235,7 +231,6 @@ class DuplicateScripts():
             self.total_ignored += change_blockid(scripts_dict[sprite],  opcode_dict, self.ignore)
             self.total_sprites += 1
             self.total_scripts += len(scripts_dict[sprite])
-        #print(scripts_dict)
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
         self.all_customs_blocks = {"name": filename,
@@ -246,11 +241,13 @@ class DuplicateScripts():
     def get_dup_intra_sprite(self, scripts_dict):
         """Finds intra-sprite duplication"""
         self.intra_dups_list = []
+        self.intra_dups_list_try =  [] # GREX PREGUNTA
         for sprite in scripts_dict:
             blocks = scripts_dict[sprite]
             dups = find_dups(blocks)
             if dups:
                 self.intra_dups_list.append(dups[0])
+                self.intra_dups_list_try.extend(self.intra_dups_list) # GREX PREGUNTA
 
     def get_dup_project_wide(self, scripts_dict):
         """Finds project-wide duplication"""
@@ -273,15 +270,18 @@ class DuplicateScripts():
         """Output the duplicate scripts detected."""
         with open(filename + '-sprite.json',
                   'w') as outfile:
-            json.dump(self.intra_dups_list, outfile)
+            # json.dump(self.intra_dups_list, outfile)
+            json.dump(self.intra_dups_list_try, outfile)
         with open(filename + '-project.json',
                   'w') as outfile:
             json.dump(self.project_dups_list, outfile)
         with open(filename + '-custom.json',
                   'w') as outfile:
             json.dump(self.all_customs_blocks, outfile)
-        count = sum([len(listElem) for listElem in self.intra_dups_list])
-        count = len(self.intra_dups_list)
+        # count = sum([len(listElem) for listElem in self.intra_dups_list])
+        # count = len(self.intra_dups_list)
+        count = sum([len(listElem) for listElem in self.intra_dups_list_try])
+        count = len(self.intra_dups_list_try)
         result = ("\n" + str(self.total_blocks) +
                   " total blocks found\n")
         result += (str(self.total_scripts) + " total scripts found\n")
