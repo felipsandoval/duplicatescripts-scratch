@@ -14,6 +14,9 @@ CONDITIONALS = ["control_if", "control_if_else", "control_repeat_until"]
 
 CONTROL_MARKS = ["END_LOOP", "END_IF", "END_ELSE", "END_LOOP_CONDITIONAL"]
 
+class NextFile(Exception):
+    #print("A file corrupted. Starting with next one.")
+    pass
 
 def find_dups(blocks):
     """
@@ -77,25 +80,29 @@ def change_blockid2opcode(sprite, opcode_dict, ignore_list, ignore):
 
 def getloop_ids(block_value, blocks_dict, block_id):
     """Extract blockids from loops and conditional blocks"""
-    loop_list = []
-    loop_list.append(block_id)
-    start = block_value["inputs"]["SUBSTACK"][1]
-    # What happens if a loop does not have inputs nor substack value ?
-    if start is None:
+    try:
+        loop_list = []
+        loop_list.append(block_id)
+        start = block_value["inputs"]["SUBSTACK"][1]
+        # What happens if a loop does not have inputs nor substack value ?
+        if start is None:
+            return loop_list
+        b_inside_loop = get_next_blocks(start, blocks_dict)
+        loop_list.extend(b_inside_loop)
+        if block_value["opcode"] in CONDITIONALS:
+            loop_list.append("END_IF")
+            if block_value["opcode"] == "control_if_else":
+                start = block_value["inputs"]["SUBSTACK2"][1]
+                # What happens if a loop does not have this value ?
+                b_2_inside_loop = []
+                if start is not None:
+                    b_2_inside_loop = get_next_blocks(start, blocks_dict)
+                loop_list.extend(b_2_inside_loop)
+                loop_list.append("END_ELSE")
+        loop_list.append("END_LOOP")
         return loop_list
-    b_inside_loop = get_next_blocks(start, blocks_dict)
-    loop_list.extend(b_inside_loop)
-    if block_value["opcode"] in CONDITIONALS:
-        loop_list.append("END_IF")
-        if block_value["opcode"] == "control_if_else":
-            start = block_value["inputs"]["SUBSTACK2"][1]
-            b_2_inside_loop = []
-            if start is not None:
-                b_2_inside_loop = get_next_blocks(start, blocks_dict)
-            loop_list.extend(b_2_inside_loop)
-            loop_list.append("END_ELSE")
-    loop_list.append("END_LOOP")
-    return loop_list
+    except KeyError:
+        raise NextFile
 
 
 def add_loop_block(loops_dict, scripts_dict, sprite):
@@ -197,11 +204,14 @@ class DuplicateScripts():
                 opcode_dict[block_id] = block["opcode"]
                 if block["opcode"] in LOOP_BLOCKS:
                     loop_list = getloop_ids(block, self.blocks_dict, block_id)
-                    if block["parent"] is not None:
-                        loops_dict[block["parent"]] = loop_list
-                    else:
-                        scripts_dict[sprite].append(loop_list)
-                        self.toplevel_list.append(block_id)  # opcode from loop is parent
+                    try:
+                        if block["parent"] is not None:
+                            loops_dict[block["parent"]] = loop_list
+                        else:
+                            scripts_dict[sprite].append(loop_list)
+                            self.toplevel_list.append(block_id)  # opcode from loop is parent
+                    except KeyError:
+                        raise NextFile
                 elif block["opcode"] == "procedures_prototype":
                     custom_dict[sprite].append(get_custominfo(block))
                     self.total_custom_blocks += 1

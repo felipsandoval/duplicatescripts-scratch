@@ -23,7 +23,7 @@ def main(json_project):
                 # Counting each opcode from every sprites
                 d[blocks_value['opcode']] += 1
             except TypeError:
-                print("Error message: Check this out. Special case")
+                print("Error message: Check this in most_frequent_blocks.py")
                 pass
     # Ordering opcodes from least to most frequent
     most_frequent = sorted(d.items(), key=lambda kv: kv[1], reverse=True)

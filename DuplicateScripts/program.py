@@ -39,17 +39,23 @@ def sb3_json_extraction(fileIn):
 
 def obtaining_json(filename):
     """Obtains JSON file from different extentions"""
-    json_files_list = []
     if filename.endswith(".zip"):
         # Creates a list with all JSON within the extention
+        json_files_list = []
         zip_file = zipfile.ZipFile(filename, "r")
         list_filenames = zip_file.namelist()
+        if os.path.exists("test"):
+            shutil.rmtree("test")
+        os.mkdir("test", 0o666)
         for file in list_filenames:
             if file.endswith('.json'):
+                #zip_file.extract(file)
+                zip_file.extract(file, "test")
                 json_files_list.append(file)
-            return json_files_list
+        zip_file.close()
+        return json_files_list
     elif filename.endswith(".json"):
-        json_file = json.loads(open(filename).read())
+        json_file = json.loads(open(filename, encoding="utf8").read())
     elif filename.endswith(".sb3"):
         json_file = sb3_json_extraction(filename)
     return json_file
@@ -81,9 +87,18 @@ def start(filename, ignoring):
     json_project = obtaining_json(filename)
     if filename.endswith('.zip'):
         # Still in need to be tested in multiple files
+        #os.chdir("test")
         for i in json_project:
-            json_file = json.loads(open(i).read())
-            main(filename, ignoring, json_file)
+            os.chdir("test")
+            json_file = json.loads(open(i, encoding="utf8").read())
+            os.chdir("..")
+            try:
+                main(filename, ignoring, json_file)
+                #os.remove(i) si estoy uno a uno
+            except duplicateScripts.NextFile:
+                print("FILE: ", i, " HAS AN ERROR.")
+                print("\n*** ENDING ANALYSIS ***\n")
+                pass
     else:
         main(filename, ignoring, json_project)
     logging.info("Program works as expected.")
@@ -108,6 +123,7 @@ if __name__ == "__main__":
     except FileNotFoundError:
         logging.critical("File Not Found Error: " +
                          "File name does not exist or is not well written.")
+        logging.critical(traceback.format_exc())
         sys.exit("\nPlease, use a file that exists in directory\n")
     except ModuleNotFoundError:
         logging.critical("Module Not Found Error:" +
