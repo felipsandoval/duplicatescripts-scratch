@@ -1,20 +1,29 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Github: @felipsandoval
-# para ejecutar: python3 -m unittest <nombre del fichero test_XXX.py>
-# con el metodo de main se puede ejecutar como python3 <nombre del fichero test_XXX.py>
-# python -m unittest discover -- 
-# esto ejecutará TODOS los ficheros cuyo nombre empiecen por test y los ejecutará
+# To run with module: python3 -m unittest <test_XXX.py>
+# Also run with: python3 <test_XXX.py>
+# Run all test with: python -m unittest discover
 
 from program import *
 import unittest
-#probar con type
+
+
 class TestProgram(unittest.TestCase):
     def test_obtaining_json(self):
-        self.assertEqual(obtaining_json("project.json"), json.loads(open("project.json").read()))
-        self.assertEqual(obtaining_json("project.json"), json.loads(open("project.json").read()))
+        self.assertEqual(obtaining_json("project.json"),
+                         json.loads(open("project.json").read()))
+        self.assertEqual(obtaining_json("test_projects.zip"),
+                         ['490593149.json', '490593198.json',
+                          '490593289.json'])
+        self.assertEqual(obtaining_json("test.sb3"),
+                         json.loads(open("project.json").read()))
+        self.assertNotEqual(obtaining_json("test.sb3"), "project.json")
 
-#unittest.main(argv=[''],verbosity=2, exit=False)
+    def test_sb3_json_extraction(self):
+        self.assertEqual(sb3_json_extraction("test.sb3"),
+                         json.loads(open("project.json").read()))
+
 
 if __name__ == "__main__":
     unittest.main()
