@@ -88,8 +88,6 @@ def start(filename, ignoring):
         print("\\\ IGNORING BLOCKS ACTIVATED ///\n")
     json_project = obtaining_json(filename)
     if filename.endswith('.zip'):
-        # Still in need to be tested in multiple files
-        # os.chdir("test")
         for i in json_project:
             print("\n---- OPENING FILE:", i, "  ----\n")
             os.chdir("test")
