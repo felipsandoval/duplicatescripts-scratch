@@ -89,6 +89,7 @@ def start(filename, ignoring):
         # Still in need to be tested in multiple files
         #os.chdir("test")
         for i in json_project:
+            print("\n---- OPENING FILE FROM ZIP ", i ,"  ----\n")
             os.chdir("test")
             json_file = json.loads(open(i, encoding="utf8").read())
             os.chdir("..")
@@ -96,11 +97,13 @@ def start(filename, ignoring):
                 main(filename, ignoring, json_file)
                 #os.remove(i) si estoy uno a uno
             except duplicateScripts.NextFile:
+                logging.critical("FILE ", i, " HAS AN KEYERROR. CHECK DEEPLY")
                 print("FILE: ", i, " HAS AN ERROR.")
-                print("\n*** ENDING ANALYSIS ***\n")
+                print("\n---- CLOSING FILE FROM ZIP ", i ,"  ----\n")
                 pass
     else:
         main(filename, ignoring, json_project)
+    print("\n*** ENDING ANALYSIS ***\n")
     logging.info("Program works as expected.")
 
 
