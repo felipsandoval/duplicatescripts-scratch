@@ -83,29 +83,25 @@ def change_blockid(scripts_list, opcode_dict, ignore):
 
 def getloop_ids(block_value, blocks_dict, block_id):
     """Extract blockids from loops and conditional blocks"""
-    try:
-        loop_list = []
-        loop_list.append(block_id)
+    loop_list = []
+    loop_list.append(block_id)
+    if "SUBSTACK" in block_value:
         start = block_value["inputs"]["SUBSTACK"][1]
-        # What happens if a loop does not have inputs nor substack value ?
-        if start is None:
-            return loop_list
         b_inside_loop = get_next_blocks(start, blocks_dict)
         loop_list.extend(b_inside_loop)
-        if block_value["opcode"] in CONDITIONALS:
-            loop_list.append("END_IF")
-            if block_value["opcode"] == "control_if_else":
+    # What happens if a loop does not have this value ?
+    if block_value["opcode"] in CONDITIONALS:
+        loop_list.append("END_IF")
+        if block_value["opcode"] == "control_if_else":
+            b_2_inside_loop = []
+            if "SUBSTACK2" in block_value:
                 start = block_value["inputs"]["SUBSTACK2"][1]
-                # What happens if a loop does not have this value ?
-                b_2_inside_loop = []
-                if start is not None:
-                    b_2_inside_loop = get_next_blocks(start, blocks_dict)
+                b_2_inside_loop = get_next_blocks(start, blocks_dict)
                 loop_list.extend(b_2_inside_loop)
-                loop_list.append("END_ELSE")
-        loop_list.append("END_LOOP")
-        return loop_list
-    except KeyError:
-        raise NextFile
+            # What happens if a loop does not have this value ?
+            loop_list.append("END_ELSE")
+    loop_list.append("END_LOOP")
+    return loop_list
 
 
 def add_loop_block(loops_dict, scripts_dict, sprite):
@@ -124,17 +120,16 @@ def add_loop_block(loops_dict, scripts_dict, sprite):
 
 def get_custominfo(block):
     """Extract information from custom blocks"""
-    try:
-        custom_info = {"type": "procedures_prototype",
-                       "custom_name": block["mutation"]["proccode"],
-                       "argument_names": block["mutation"]["argumentnames"],
-                       "n_calls": 0}
-                       # "topLevel": block["topLevel"] worth ?
+    custom_info = {"type": "procedures_prototype",
+                    "custom_name": block["mutation"]["proccode"],
+                    "argument_names": block["mutation"]["argumentnames"],
+                    "n_calls": 0}
+                    # "topLevel": block["topLevel"] worth ?
+    if "parent" in block:
         custom_info.update({"blocks": block["parent"]})
-        return custom_info
-    except KeyError:
+    else:
         custom_info.update({"blocks": "empty"})
-        return custom_info
+    return custom_info
 
 
 def custom_was_called(block, custom_dict, sprite):
@@ -202,14 +197,11 @@ class DuplicateScripts():
                 opcode_dict[block_id] = block["opcode"]
                 if block["opcode"] in LOOP_BLOCKS:
                     loop_list = getloop_ids(block, self.blocks_dict, block_id)
-                    try:
-                        if block["parent"] is not None:
-                            loops_dict[block["parent"]] = loop_list
-                        else:
-                            scripts_dict[sprite].append(loop_list)
-                            self.toplevel_list.append(block_id)  # opcode from loop is parent
-                    except KeyError:
-                        raise NextFile
+                    if "parent" in block and block["parent"] is not None:
+                        loops_dict[block["parent"]] = loop_list
+                    else:
+                        scripts_dict[sprite].append(loop_list)
+                        self.toplevel_list.append(block_id)  # opcode from loop is parent
                 elif block["opcode"] == "procedures_prototype":
                     custom_dict[sprite].append(get_custominfo(block))
                     self.total_custom_blocks += 1
