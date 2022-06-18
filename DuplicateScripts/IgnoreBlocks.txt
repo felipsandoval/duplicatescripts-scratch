@@ -37,7 +37,5 @@ data_variable
 data_itemoflist
 data_itemnumoflist
 data_lengthoflist
-procedures_definition
-procedures_prototype
 argument_reporter_string_number
 argument_reporter_boolean
