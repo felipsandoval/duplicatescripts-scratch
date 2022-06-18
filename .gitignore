@@ -1,21 +1,9 @@
 
 .DS_Store
-testinglists.py
-Proyecto de Scratch.sb3
-ProyectoScratch.json
-ProyectoScratch-sprite.json
-ProyectoScratch-project.json
-pruebita.json
-pruebita-sprite.json
-pruebita-project.json
 project.json
-loop.json
-loop-sprite.json
-loop-project.json
-looooopunico.json
-fdsfsd.json
 project.json
 *.pyc
 DuplicateScripts/log.txt
 DuplicateScripts/blocks.json
 *.txt
+DuplicateScripts/test/
