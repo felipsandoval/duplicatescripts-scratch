@@ -125,7 +125,6 @@ if __name__ == "__main__":
     except FileNotFoundError:
         logging.critical("File Not Found Error: " +
                          "File name does not exist or is not well written.")
-        logging.critical(traceback.format_exc())
         sys.exit("\nPlease, use a file that exists in directory\n")
     except ModuleNotFoundError:
         logging.critical("Module Not Found Error:" +
