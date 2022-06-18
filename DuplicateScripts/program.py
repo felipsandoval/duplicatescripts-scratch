@@ -49,7 +49,7 @@ def obtaining_json(filename):
         os.mkdir("test", 0o666)
         for file in list_filenames:
             if file.endswith('.json'):
-                #zip_file.extract(file)
+                # zip_file.extract(file)
                 zip_file.extract(file, "test")
                 json_files_list.append(file)
         zip_file.close()
@@ -87,19 +87,18 @@ def start(filename, ignoring):
     json_project = obtaining_json(filename)
     if filename.endswith('.zip'):
         # Still in need to be tested in multiple files
-        #os.chdir("test")
+        # os.chdir("test")
         for i in json_project:
-            print("\n---- OPENING FILE FROM ZIP ", i ,"  ----\n")
+            print("\n---- OPENING FILE FROM ZIP ", i, "  ----\n")
             os.chdir("test")
             json_file = json.loads(open(i, encoding="utf8").read())
             os.chdir("..")
             try:
                 main(filename, ignoring, json_file)
-                #os.remove(i) si estoy uno a uno
             except duplicateScripts.NextFile:
                 logging.info("FILE " + i + " HAS AN KEYERROR. CHECK DEEPLY")
                 print("FILE: ", i, " HAS AN ERROR.")
-                print("\n---- CLOSING FILE FROM ZIP ", i ,"  ----\n")
+                print("\n---- CLOSING FILE FROM ZIP ", i, "  ----\n")
                 pass
     else:
         main(filename, ignoring, json_project)

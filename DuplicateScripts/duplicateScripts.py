@@ -138,13 +138,6 @@ def get_custominfo(block):
         return custom_info
 
 
-# For practicing unittests
-def cuboid_volume(l):
-    if type(l) not in [int, float]:
-        raise TypeError("The Length of cuboid can only be a valid integer or a float")
-    return (l*l*l)
-
-
 def custom_was_called(block, custom_dict, sprite):
 
     for j in custom_dict[sprite]:
@@ -210,7 +203,7 @@ class DuplicateScripts():
                         else:
                             scripts_dict[sprite].append(loop_list)
                             self.toplevel_list.append(block_id)  # opcode from loop is parent
-                    except KeyError:
+                    except Key :
                         raise NextFile
                 elif block["opcode"] == "procedures_prototype":
                     custom_dict[sprite].append(get_custominfo(block))
