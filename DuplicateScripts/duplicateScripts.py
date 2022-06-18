@@ -66,16 +66,23 @@ def get_next_blocks(start, block_dict):
     return b_inside_loop
 
 
-def change_blockid2opcode(sprite, opcode_dict, ignore_list, ignore):
+def change_blockid(scripts_list, opcode_dict, ignore):
     """Changes block id for opcode"""
-    for block in sprite:
-        for j in range(len(block)):
-            if block[j] not in CONTROL_MARKS:
-                block[j] = opcode_dict[block[j]]
-            if ignore:
-                if block[j] in ignore_list and block[j] not in CONTROL_MARKS:
-                    block[j] = "IGNORED_BLOCK"
-                    # Se debe eliminar o sencillamente ignorar. control marks?
+    ignored = 0
+    ignore_list = blocks2ignore()
+    for script in scripts_list:
+        i = 0
+        while i < len(script):
+            if script[i] not in CONTROL_MARKS:
+               script[i] = opcode_dict[script[i]]
+            if ignore and script[i] in ignore_list:
+                # script[i] = "IGNORED_BLOCK"
+                # Se debe eliminar o sencillamente ignorar. control marks?
+                script.pop(i)
+                ignored += 1
+            else:
+                i += 1
+    return ignored
 
 
 def getloop_ids(block_value, blocks_dict, block_id):
@@ -167,13 +174,13 @@ class DuplicateScripts():
     def __init__(self, ignoring):
         self.ignore = ignoring
         self.total_blocks = 0
+        self.total_ignored = 0
         self.total_scripts = 0
         self.total_sprites = 0
         self.total_custom_blocks = 0
         self.total_custom_calls = 0
         self.all_customs_blocks = {}
         self.toplevel_list = []
-        self.ignore_list = blocks2ignore()
 
     def analyze(self, filename, json_project):
         """Start parsering it"""
@@ -225,10 +232,10 @@ class DuplicateScripts():
             # Add blocks to loops
             if bool(loops_dict):
                 scripts_dict = add_loop_block(loops_dict, scripts_dict, sprite)
-            change_blockid2opcode(scripts_dict[sprite], opcode_dict,
-                                  self.ignore_list, self.ignore)
+            self.total_ignored += change_blockid(scripts_dict[sprite],  opcode_dict, self.ignore)
             self.total_sprites += 1
             self.total_scripts += len(scripts_dict[sprite])
+        #print(scripts_dict)
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
         self.all_customs_blocks = {"name": filename,
@@ -279,6 +286,7 @@ class DuplicateScripts():
                   " total blocks found\n")
         result += (str(self.total_scripts) + " total scripts found\n")
         result += (str(self.total_sprites) + " total sprites found\n")
+        result += (str(self.total_ignored) + " total blocks ignored\n")
         result += ("{} intra-sprite duplicate scripts found\n".format(count))
         result += ("%d project-wide duplicate scripts found\n" %
                    len(self.project_dups_list))
