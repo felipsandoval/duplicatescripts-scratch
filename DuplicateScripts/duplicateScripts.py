@@ -203,7 +203,7 @@ class DuplicateScripts():
                         else:
                             scripts_dict[sprite].append(loop_list)
                             self.toplevel_list.append(block_id)  # opcode from loop is parent
-                    except Key :
+                    except KeyError:
                         raise NextFile
                 elif block["opcode"] == "procedures_prototype":
                     custom_dict[sprite].append(get_custominfo(block))
