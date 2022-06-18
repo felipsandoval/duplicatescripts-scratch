@@ -29,15 +29,6 @@ def json2dna(duplicates):
                 blocks_dict[block] = characters[len(blocks_dict)]
             block_list.append(blocks_dict[block])
         scripts.append(''.join(block_list))
-    print("AQUI BLOCK LIST")
-    print(block_list)
-    print("AQUI BLOCK LIST")
-    print("AQUI BLOCK DICT")
-    print(blocks_dict)
-    print("AQUI BLOCK DICT")
-    print("AQUI SPRITES")
-    print(scripts)
-    print("AQUI SPRITES")
     return(scripts, blocks_dict)
 
 
