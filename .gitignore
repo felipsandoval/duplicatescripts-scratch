@@ -1,9 +1,7 @@
 
 .DS_Store
-project.json
-project.json
+DuplicateScripts/project.json
 *.pyc
-DuplicateScripts/log.txt
 DuplicateScripts/blocks.json
 *.txt
 DuplicateScripts/test/
