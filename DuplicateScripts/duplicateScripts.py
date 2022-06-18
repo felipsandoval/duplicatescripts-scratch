@@ -166,11 +166,13 @@ class DuplicateScripts():
 
     def __init__(self, ignoring):
         self.ignore = ignoring
-        self.toplevel_list = []
         self.total_blocks = 0
+        self.total_scripts = 0
+        self.total_sprites = 0
         self.total_custom_blocks = 0
         self.total_custom_calls = 0
         self.all_customs_blocks = {}
+        self.toplevel_list = []
         self.ignore_list = blocks2ignore()
 
     def analyze(self, filename, json_project):
@@ -216,6 +218,7 @@ class DuplicateScripts():
                     sucesive_list = self.search_next([], block_id)
                     scripts_dict[sprite].append(sucesive_list)
                     self.toplevel_list.append(block_id)
+            
             # Add blocks to custom
             if bool(custom_dict[sprite]):
                 add_blocks_2custom(scripts_dict, custom_dict, sprite)
@@ -224,6 +227,8 @@ class DuplicateScripts():
                 scripts_dict = add_loop_block(loops_dict, scripts_dict, sprite)
             change_blockid2opcode(scripts_dict[sprite], opcode_dict,
                                   self.ignore_list, self.ignore)
+            self.total_sprites += 1
+            self.total_scripts += len(scripts_dict[sprite])
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
         self.all_customs_blocks = {"name": filename,
@@ -271,7 +276,9 @@ class DuplicateScripts():
         count = sum([len(listElem) for listElem in self.intra_dups_list])
         count = len(self.intra_dups_list)
         result = ("\n" + str(self.total_blocks) +
-                  " total blocks found in all project\n")
+                  " total blocks found\n")
+        result += (str(self.total_scripts) + " total scripts found\n")
+        result += (str(self.total_sprites) + " total sprites found\n")
         result += ("{} intra-sprite duplicate scripts found\n".format(count))
         result += ("%d project-wide duplicate scripts found\n" %
                    len(self.project_dups_list))

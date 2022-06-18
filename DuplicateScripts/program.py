@@ -89,7 +89,7 @@ def start(filename, ignoring):
         # Still in need to be tested in multiple files
         # os.chdir("test")
         for i in json_project:
-            print("\n---- OPENING FILE FROM ZIP ", i, "  ----\n")
+            print("\n---- OPENING FILE:", i, "  ----\n")
             os.chdir("test")
             json_file = json.loads(open(i, encoding="utf8").read())
             os.chdir("..")
