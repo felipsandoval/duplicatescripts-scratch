@@ -102,6 +102,76 @@ class TestDuplicateScripts(unittest.TestCase):
                             ["control_if", "uno", "dos", "tres", "cuatro",
                              "END_LOOP"])
 
+        self.assertEqual(getloop_ids({'opcode': 'control_if_else', 'next': "a",
+                                      'inputs': {'SUBSTACK': [2, 'uno'],
+                                                 'SUBSTACK2': [2, 'tres']}},
+                                     {"uno": {"next": "dos"},
+                                      "dos": {"next": None},
+                                      "tres": {"next": "cuatro"},
+                                      "cuatro": {"next": None}},
+                                     "control_if_else"),
+                         ["control_if_else", "uno", "dos", "END_IF",
+                          "tres", "cuatro", "END_ELSE", "END_LOOP"])
+
+        self.assertEqual(getloop_ids({'opcode': 'control_if_else', 'next': "a",
+                                      'inputs': {'SUBSTACK': [2, 'uno']}},
+                                     {"uno": {"next": "dos"},
+                                      "dos": {"next": None},
+                                      "tres": {"next": "cuatro"},
+                                      "cuatro": {"next": None}},
+                                     "control_if_else"),
+                         ["control_if_else", "uno", "dos", "END_IF",
+                          "END_ELSE", "END_LOOP"])
+
+        self.assertNotEqual(getloop_ids({'opcode': 'control_if_else',
+                                         'inputs': {'SUBSTACK': [2, 'uno']}},
+                                        {"uno": {"next": "dos"},
+                                         "dos": {"next": None},
+                                         "tres": {"next": "cuatro"},
+                                         "cuatro": {"next": None}},
+                                        "control_if_else"),
+                            ["control_if_else", "uno", "dos", "END_IF",
+                             "END_LOOP"])
+
+        self.assertEqual(getloop_ids({'opcode': 'control_if_else', 'next': "a",
+                                      'inputs': {'SUBSTAC2K': [2, None]}},
+                                     {"uno": {"next": None},
+                                      "dos": {"next": None},
+                                      "tres": {"next": "cuatro"},
+                                      "cuatro": {"next": None}},
+                                     "control_if_else"),
+                         ["control_if_else", "END_IF", "END_ELSE", "END_LOOP"])
+
+    def test_add_loop_block(self):
+        self.assertEqual(add_loop_block({'3': ["4", "b", "i", "e", "n"]},
+                                        {"A": [["1", "2", "3", "4"]],
+                                         "B": [["9", "10"], ["11", "12"]],
+                                         "C": [["21", "22", "23", "24"]]},
+                                        "A"),
+                         {"A": [["1", "2", "3", "4", "b", "i", "e", "n"]],
+                          "B": [["9", "10"], ["11", "12"]],
+                          "C": [["21", "22", "23", "24"]]})
+
+        self.assertEqual(add_loop_block({'10': ["b", "i", "e", "n"]},
+                                        {"A": [["1", "2", "3", "4"]],
+                                         "B": [["9", "10"], ["11", "12"]],
+                                         "C": [["21", "22", "23", "24"]]},
+                                        "B"),
+                         {"A": [["1", "2", "3", "4"]],
+                          "B": [["9", "10", "b", "i", "e", "n"], ["11", "12"]],
+                          "C": [["21", "22", "23", "24"]]})
+
+        self.assertEqual(add_loop_block({'1': ["2", "3", "4", "b", "i",
+                                               "e", "n"]},
+                                        {"A": [["1", "2", "3", "4"]],
+                                         "B": [["9", "10"], ["11", "12"]],
+                                         "C": [["21", "22", "23", "24"]]},
+                                        "A"),
+                         {"A": [["1", "2", "3", "4", "b", "i", "e",
+                                 "n", "3", "4"]],
+                          "B": [["9", "10"], ["11", "12"]],
+                          "C": [["21", "22", "23", "24"]]})
+
 
 if __name__ == "__main__":
     unittest.main()
