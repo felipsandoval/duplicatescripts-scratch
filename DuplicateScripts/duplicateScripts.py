@@ -45,9 +45,9 @@ def blocks2ignore():
 def get_next_blocks(start, block_dict):
     """Get the next block_ids"""
     # SPECIAL CASE: there is only a single block inside a loop
-    next_block_id = block_dict[start]["next"]
     b_inside_loop = []
     b_inside_loop.append(start)
+    next_block_id = block_dict[start]["next"]
     if next_block_id is None:
         n_block = None
     else:
@@ -85,19 +85,21 @@ def getloop_ids(block_value, blocks_dict, block_id):
     """Extract blockids from loops and conditional blocks"""
     loop_list = []
     loop_list.append(block_id)
-    if "SUBSTACK" in block_value:
+    if "SUBSTACK" in block_value["inputs"]:
         start = block_value["inputs"]["SUBSTACK"][1]
-        b_inside_loop = get_next_blocks(start, blocks_dict)
-        loop_list.extend(b_inside_loop)
+        if start is not None:
+            b_inside_loop = get_next_blocks(start, blocks_dict)
+            loop_list.extend(b_inside_loop)
     # What happens if a loop does not have this value ?
     if block_value["opcode"] in CONDITIONALS:
         loop_list.append("END_IF")
         if block_value["opcode"] == "control_if_else":
             b_2_inside_loop = []
-            if "SUBSTACK2" in block_value:
+            if "SUBSTACK2" in block_value["inputs"]:
                 start = block_value["inputs"]["SUBSTACK2"][1]
-                b_2_inside_loop = get_next_blocks(start, blocks_dict)
-                loop_list.extend(b_2_inside_loop)
+                if start is not None:
+                    b_2_inside_loop = get_next_blocks(start, blocks_dict)
+                    loop_list.extend(b_2_inside_loop)
             # What happens if a loop does not have this value ?
             loop_list.append("END_ELSE")
     loop_list.append("END_LOOP")
@@ -133,16 +135,13 @@ def get_custominfo(block):
 
 
 def custom_was_called(block, custom_dict, sprite):
-
     for j in custom_dict[sprite]:
         if j["custom_name"] == block["mutation"]["proccode"]:
             j["n_calls"] = j["n_calls"] + 1
-
     return custom_dict
 
 
 def add_blocks_2custom(scripts_dict, custom_dict, sprite):
-
     iterate = 0
     while len(custom_dict[sprite]) != iterate:
         for j in custom_dict[sprite]:
@@ -225,6 +224,7 @@ class DuplicateScripts():
             self.total_scripts += len(scripts_dict[sprite])
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
+        print(scripts_dict)
         self.all_customs_blocks = {"name": filename,
                                    "custom_blocks": list_customb,
                                    "number_custom_blocks": self.total_custom_blocks,
