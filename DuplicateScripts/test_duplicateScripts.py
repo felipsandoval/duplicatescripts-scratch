@@ -31,15 +31,46 @@ class TestDuplicateScripts(unittest.TestCase):
                             ["uno", "dos", "tres"])
 
         self.assertEqual(get_next_blocks("A", {"A": {"next": "B"},
-                                                 "B": {"next": "C"},
-                                                 "C": {"next": None},
-                                                 "D": {"next": "A"}}),
+                                               "B": {"next": "C"},
+                                               "C": {"next": None},
+                                               "D": {"next": "A"}}),
                          ["A", "B", "C"])
 
         self.assertEqual(get_next_blocks("loop", {"loop": {"next": None},
-                                                    "empty": {"next": "Wrong"}}),
-                            ["loop"])
- 
+                                                  "empty": {"next": "Wrong"}}),
+                         ["loop"])
+
+        self.assertRaises(KeyError, get_next_blocks, None,
+                          {"loop": {"next": None}, "empty": {"next": "Wrong"}})
+
+    def test_change_blockid(self):
+        self.assertEqual(change_blockid([["A", "B", "C"], ["D", "E", "F"]],
+                                        {"A": "a", "B": "b", "C": "c",
+                                        "D": "d", "E": "e", "F": "f"},
+                                        False),
+                         0)
+
+        self.assertEqual(change_blockid([["A", "B", "C"], ["D", "E", "F"]],
+                                        {"A": "a", "B": "b", "C": "c",
+                                        "D": "looks_size", "E": "looks_size",
+                                         "F": "looks_costume"},
+                                        False),
+                         0)
+
+        self.assertEqual(change_blockid([["A", "B", "C"], ["D", "E", "F"]],
+                                        {"A": "a", "B": "b", "C": "c",
+                                        "D": "looks_size", "E": "looks_size",
+                                         "F": "looks_costume"},
+                                        True),
+                         3)
+
+        self.assertNotEqual(change_blockid([["A", "B", "C"], ["D", "E", "F"]],
+                                           {"A": "a", "B": "b", "C": "c",
+                                            "D": "looks_size",
+                                            "E": "looks_size",
+                                            "F": "looks_costume"},
+                                           True),
+                            2)
 
 
 if __name__ == "__main__":
