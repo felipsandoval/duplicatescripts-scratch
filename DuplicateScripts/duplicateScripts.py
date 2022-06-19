@@ -224,7 +224,6 @@ class DuplicateScripts():
             self.total_scripts += len(scripts_dict[sprite])
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
-        print(scripts_dict)
         self.all_customs_blocks = {"name": filename,
                                    "custom_blocks": list_customb,
                                    "number_custom_blocks": self.total_custom_blocks,
