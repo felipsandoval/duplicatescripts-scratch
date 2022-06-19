@@ -72,6 +72,36 @@ class TestDuplicateScripts(unittest.TestCase):
                                            True),
                             2)
 
+    def test_getloop_ids(self):
+        self.assertEqual(getloop_ids({'opcode': 'control_repeat', 'next': None,
+                                      'inputs': {'SUBSTACK3': [2, 'uno']}},
+                                     {"uno": {"next": "dos"},
+                                      "dos": {"next": "tres"},
+                                      "tres": {"next": "cuatro"},
+                                      "cuatro": {"next": None}},
+                                     "control_repeat"),
+                         ["control_repeat", "END_LOOP"])
+
+        self.assertEqual(getloop_ids({'opcode': 'control_if', 'next': None,
+                                      'inputs': {'SUBSTACK': [2, 'uno']}},
+                                     {"uno": {"next": "dos"},
+                                      "dos": {"next": "tres"},
+                                      "tres": {"next": "cuatro"},
+                                      "cuatro": {"next": None}},
+                                     "control_if"),
+                         ["control_if", "uno", "dos", "tres", "cuatro",
+                          "END_IF", "END_LOOP"])
+
+        self.assertNotEqual(getloop_ids({'opcode': 'control_if', 'next': None,
+                                         'inputs': {'SUBSTACK': [2, 'uno']}},
+                                        {"uno": {"next": "dos"},
+                                         "dos": {"next": "tres"},
+                                         "tres": {"next": "cuatro"},
+                                         "cuatro": {"next": None}},
+                                        "control_if"),
+                            ["control_if", "uno", "dos", "tres", "cuatro",
+                             "END_LOOP"])
+
 
 if __name__ == "__main__":
     unittest.main()
