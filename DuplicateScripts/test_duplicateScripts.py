@@ -182,7 +182,46 @@ class TestDuplicateScripts(unittest.TestCase):
                              "C": [["21", "22", "23", "24"]]})
 
     def test_custominfo(self):
-        pass
+        self.assertEqual(get_custominfo({'parent': "0",
+                                         'mutation': {'proccode': "A",
+                                                      'argumentnames': "B"}}),
+                         {"type": "procedures_prototype",
+                          "custom_name": "A",
+                          "argument_names": "B",
+                          "n_calls": 0, "blocks": "0"})
+
+        self.assertNotEqual(get_custominfo({'mutation': {'proccode': "A",
+                                                         'argumentnames': "B"}
+                                            }),
+                            {"type": "procedures_prototype",
+                             "custom_name": "A",
+                             "argument_names": "B",
+                             "n_calls": 0, "blocks": "0"})
+
+        self.assertEqual(get_custominfo({'mutation': {'proccode': "A",
+                                                      'argumentnames': "B"}
+                                         }),
+                         {"type": "procedures_prototype",
+                          "custom_name": "A",
+                          "argument_names": "B",
+                          "n_calls": 0, "blocks": "empty"})
+
+        self.assertEqual(get_custominfo({'mutation': {'proccode': "A",
+                                                      'argumentnames': "B"}
+                                         }),
+                         {"type": "procedures_prototype",
+                          "custom_name": "A",
+                          "argument_names": "B",
+                          "n_calls": 0, "blocks": "empty"})
+
+        self.assertRaises(KeyError, get_custominfo,
+                          {'any': {'proccode': "A", 'argumentnames': "B"}})
+
+        self.assertRaises(KeyError, get_custominfo,
+                          {'mutation': {'any': "A", 'argumentnames': "B"}})
+
+        self.assertRaises(KeyError, get_custominfo,
+                          {'mutation': {'proccode': "A", 'any': "B"}})
 
 
 if __name__ == "__main__":
