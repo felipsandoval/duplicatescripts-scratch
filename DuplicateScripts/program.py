@@ -95,7 +95,7 @@ def start(filename, ignoring):
             os.chdir("..")
             try:
                 main(filename, ignoring, json_file)
-            except duplicateScripts.NextFile:
+            except:
                 logging.info("FILE " + i + " HAS AN KEYERROR. CHECK DEEPLY")
                 print("FILE: ", i, " HAS AN ERROR.")
                 print("\n---- CLOSING FILE FROM ZIP ", i, "  ----\n")
