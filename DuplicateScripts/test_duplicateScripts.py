@@ -172,6 +172,18 @@ class TestDuplicateScripts(unittest.TestCase):
                           "B": [["9", "10"], ["11", "12"]],
                           "C": [["21", "22", "23", "24"]]})
 
+        self.assertNotEqual(add_loop_block({'3': ["4", "b", "i", "e", "n"]},
+                                           {"A": [["1", "2", "3", "4"]],
+                                            "B": [["9", "10"], ["11", "12"]],
+                                            "C": [["21", "22", "23", "24"]]},
+                                           "A"),
+                            {"A": [["1", "2", "3", "b", "i", "e", "n"]],
+                             "B": [["9", "10"], ["11", "12"]],
+                             "C": [["21", "22", "23", "24"]]})
+
+    def test_custominfo(self):
+        pass
+
 
 if __name__ == "__main__":
     unittest.main()

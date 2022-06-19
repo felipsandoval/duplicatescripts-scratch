@@ -10,6 +10,9 @@ import unittest
 
 
 class TestProgram(unittest.TestCase):
+
+    maxDiff = None
+
     def test_obtaining_json(self):
         self.assertEqual(obtaining_json("project.json"),
                          json.loads(open("project.json").read()))

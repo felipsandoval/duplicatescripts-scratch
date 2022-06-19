@@ -10,7 +10,10 @@ import unittest
 
 
 class TestMostFrequentBlocks(unittest.TestCase):
-    pass
+    def test_main(self):
+        self.assertNotEqual(main(json.loads(open("test.json",
+                                 encoding="utf8").read())), "")
+
 
 if __name__ == "__main__":
     unittest.main()
