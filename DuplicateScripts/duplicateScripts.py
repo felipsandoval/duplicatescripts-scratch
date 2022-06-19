@@ -63,7 +63,7 @@ def get_next_blocks(start, block_dict):
 
 
 def change_blockid(scripts_list, opcode_dict, ignore):
-    """Changes block id for opcode"""
+    """Changes block id for opcode and returns how many opcodes ignores"""
     ignored = 0
     ignore_list = blocks2ignore()
     for script in scripts_list:
@@ -149,10 +149,6 @@ def add_blocks_2custom(scripts_dict, custom_dict, sprite):
                 if j["blocks"] in k:
                     j["blocks"] = k
         iterate += 1
-
-
-class NextFile(Exception):
-    pass
 
 
 class DuplicateScripts():
