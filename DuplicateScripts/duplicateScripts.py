@@ -14,6 +14,7 @@ CONDITIONALS = ["control_if", "control_if_else", "control_repeat_until"]
 
 CONTROL_MARKS = ["END_LOOP", "END_IF", "END_ELSE", "END_LOOP_CONDITIONAL"]
 
+
 def find_dups(blocks):
     """
     Given a list of sequences of blocks opcodes
@@ -70,7 +71,7 @@ def change_blockid(scripts_list, opcode_dict, ignore):
         i = 0
         while i < len(script):
             if script[i] not in CONTROL_MARKS:
-               script[i] = opcode_dict[script[i]]
+                script[i] = opcode_dict[script[i]]
             if ignore and script[i] in ignore_list:
                 # script[i] = "IGNORED_BLOCK"
                 # Se debe eliminar o sencillamente ignorar. control marks?
@@ -113,7 +114,7 @@ def add_loop_block(loops_dict, scripts_dict, sprite):
             if parent in list:  # SLICE INDEXING LIST
                 position = list.index(parent)
                 if position+1 != len(list):
-                    del list[position+1]  # PARA BORRAR LOOP Q DUPLICA
+                    del list[position+1]  # DELETE DUPLICATE LOOP
                     list[position+1:1] = loops_dict[parent]
                 else:
                     list.extend(loops_dict[parent])
@@ -123,10 +124,10 @@ def add_loop_block(loops_dict, scripts_dict, sprite):
 def get_custominfo(block):
     """Extract information from custom blocks"""
     custom_info = {"type": "procedures_prototype",
-                    "custom_name": block["mutation"]["proccode"],
-                    "argument_names": block["mutation"]["argumentnames"],
-                    "n_calls": 0}
-                    # "topLevel": block["topLevel"] worth ?
+                   "custom_name": block["mutation"]["proccode"],
+                   "argument_names": block["mutation"]["argumentnames"],
+                   "n_calls": 0}
+# "topLevel": block["topLevel"] worth ?
     if "parent" in block:
         custom_info.update({"blocks": block["parent"]})
     else:
@@ -196,7 +197,7 @@ class DuplicateScripts():
                         loops_dict[block["parent"]] = loop_list
                     else:
                         scripts_dict[sprite].append(loop_list)
-                        self.toplevel_list.append(block_id)  # opcode from loop is parent
+                        self.toplevel_list.append(block_id)
                 elif block["opcode"] == "procedures_prototype":
                     custom_dict[sprite].append(get_custominfo(block))
                     self.total_custom_blocks += 1
@@ -208,33 +209,36 @@ class DuplicateScripts():
                     sucesive_list = self.search_next([], block_id)
                     scripts_dict[sprite].append(sucesive_list)
                     self.toplevel_list.append(block_id)
-            
+
             # Add blocks to custom
             if bool(custom_dict[sprite]):
                 add_blocks_2custom(scripts_dict, custom_dict, sprite)
             # Add blocks to loops
             if bool(loops_dict):
                 scripts_dict = add_loop_block(loops_dict, scripts_dict, sprite)
-            self.total_ignored += change_blockid(scripts_dict[sprite],  opcode_dict, self.ignore)
+            self.total_ignored += change_blockid(scripts_dict[sprite],
+                                                 opcode_dict, self.ignore)
             self.total_sprites += 1
             self.total_scripts += len(scripts_dict[sprite])
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
         self.all_customs_blocks = {"name": filename,
                                    "custom_blocks": list_customb,
-                                   "number_custom_blocks": self.total_custom_blocks,
-                                   "number_custom_blocks_calls": self.total_custom_calls}
+                                   "number_custom_blocks":
+                                   self.total_custom_blocks,
+                                   "number_custom_blocks_calls":
+                                   self.total_custom_calls}
 
     def get_dup_intra_sprite(self, scripts_dict):
         """Finds intra-sprite duplication"""
         self.intra_dups_list = []
-        self.intra_dups_list_try =  [] # GREX PREGUNTA
+        self.intra_dups_list_try = []  # GREX PREGUNTA
         for sprite in scripts_dict:
             blocks = scripts_dict[sprite]
             dups = find_dups(blocks)
             if dups:
                 self.intra_dups_list.append(dups[0])
-                self.intra_dups_list_try.extend(self.intra_dups_list) # GREX PREGUNTA
+                self.intra_dups_list_try.extend(self.intra_dups_list)
 
     def get_dup_project_wide(self, scripts_dict):
         """Finds project-wide duplication"""
