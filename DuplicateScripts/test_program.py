@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Github: @felipsandoval
-# To run with module: python3 -m unittest <test_XXX.py>
+# To run with module: python3 -m unittest <test_XXXX.py>
 # Also run with: python3 <test_XXX.py>
 # Run all test with: python -m unittest discover
 
