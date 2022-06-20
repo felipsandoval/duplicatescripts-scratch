@@ -223,6 +223,20 @@ class TestDuplicateScripts(unittest.TestCase):
         self.assertRaises(KeyError, get_custominfo,
                           {'mutation': {'proccode': "A", 'any': "B"}})
 
+    def test_custom_was_called(self):
+        self.assertEqual(custom_was_called({'opcode': 'procedures_call',
+                                            'mutation': {'proccode': 'A'}},
+                                           {'Stage': [],
+                                            'Objeto1': [{'type': 'test',
+                                                         'custom_name': 'A',
+                                                         'n_calls': 0,
+                                                         'blocks': 'any'}]},
+                                           "Objeto1"),
+                         {'Stage': [],
+                          'Objeto1': [{'type': 'test',
+                                       'custom_name': 'A',
+                                       'n_calls': 1, 'blocks': 'any'}]})
+
 
 if __name__ == "__main__":
     unittest.main()
