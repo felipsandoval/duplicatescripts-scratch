@@ -3,7 +3,7 @@
 # Github: @felipsandoval
 # To run with module: python3 -m unittest <test_XXX.py>
 # Also run with: python3 <test_XXX.py>
-# Run all test with: python -m unittest discover
+# Run all test with: python3 -m unittest discover
 
 from duplicateScripts import *
 import unittest
@@ -223,8 +223,8 @@ class TestDuplicateScripts(unittest.TestCase):
         self.assertRaises(KeyError, get_custominfo,
                           {'mutation': {'proccode': "A", 'any': "B"}})
 
-    def test_custom_was_called(self):
-        self.assertEqual(custom_was_called({'opcode': 'procedures_call',
+    def test_add_custom_call(self):
+        self.assertEqual(add_custom_call({'opcode': 'procedures_call',
                                             'mutation': {'proccode': 'A'}},
                                            {'Stage': [],
                                             'Objeto1': [{'type': 'test',
@@ -237,7 +237,7 @@ class TestDuplicateScripts(unittest.TestCase):
                                        'custom_name': 'A',
                                        'n_calls': 1, 'blocks': 'any'}]})
 
-        self.assertEqual(custom_was_called({'opcode': 'procedures_call',
+        self.assertEqual(add_custom_call({'opcode': 'procedures_call',
                                             'mutation': {'proccode': 'A'}},
                                            {'Stage': [],
                                             'Objeto1': [{'type': 'test',
@@ -250,7 +250,7 @@ class TestDuplicateScripts(unittest.TestCase):
                                        'custom_name': 'A',
                                        'n_calls': 6, 'blocks': 'any'}]})
 
-        self.assertNotEqual(custom_was_called({'opcode': 'procedures_call',
+        self.assertNotEqual(add_custom_call({'opcode': 'procedures_call',
                                                'mutation': {'proccode': 'A'}},
                                               {'Stage': [],
                                                'Objeto1': [{'type': 'test',
@@ -263,7 +263,7 @@ class TestDuplicateScripts(unittest.TestCase):
                                           'custom_name': 'A',
                                           'n_calls': 6, 'blocks': 'any'}]})
 
-        self.assertRaises(KeyError, custom_was_called,
+        self.assertRaises(KeyError, add_custom_call,
                           {'mutation': {'': 'A'}},
                           {'Stage': [], 'Objeto1': [{'type': 'test',
                                                      'custom_name': 'A',
@@ -271,7 +271,7 @@ class TestDuplicateScripts(unittest.TestCase):
                                                      'blocks': 'any'}]},
                           "Objeto1")
 
-        self.assertRaises(KeyError, custom_was_called,
+        self.assertRaises(KeyError, add_custom_call,
                           {'A': {'proccode': 'A'}},
                           {'Stage': [], 'Objeto1': [{'type': 'test',
                                                      'custom_name': 'A',
@@ -279,7 +279,7 @@ class TestDuplicateScripts(unittest.TestCase):
                                                      'blocks': 'any'}]},
                           "Objeto1")
 
-        self.assertRaises(KeyError, custom_was_called,
+        self.assertRaises(KeyError, add_custom_call,
                           {'mutation': {'proccode': 'A'}},
                           {'Stage': [], 'Objeto1': [{'type': 'test',
                                                      'custom': 'B',
@@ -287,13 +287,41 @@ class TestDuplicateScripts(unittest.TestCase):
                                                      'blocks': 'any'}]},
                           "Objeto1")
 
-        self.assertRaises(KeyError, custom_was_called,
+        self.assertRaises(KeyError, add_custom_call,
                           {'mutation': {'proccode': 'A'}},
                           {'Stage': [], 'Objeto1': [{'type': 'test',
                                                      'custom_name': 'A',
                                                      'calls': 3,
                                                      'blocks': 'any'}]},
                           "Objeto1")
+
+    def test_add_blocks_2custom(self):
+        self.assertEqual(add_blocks_2custom({"A": [["1", "2", "3", "4"]],
+                                             "B": [["any", "10"], ["11", "12"]],
+                                             "C": [["21", "22", "23", "24"]]},
+                                            {'A': [],
+                                             'B': [{'blocks': 'any'}]},
+                                           "B"),
+                         {'A': [],
+                          'B': [{'blocks': ["any", "10"]}]})
+
+        self.assertEqual(add_blocks_2custom({"A": [["1", "2", "3", "4"]],
+                                             "B": [["any", "10"], ["11", "12"]],
+                                             "C": [["21", "22", "23", "24"]]},
+                                            {'A': [],
+                                             'B': [{'blocks': '11'}]},
+                                           "B"),
+                         {'A': [],
+                          'B': [{'blocks': ["11", "12"]}]})
+
+        self.assertEqual(add_blocks_2custom({"B": [["1", "2", "3", "4"]],
+                                             "A": [["any", "10"], ["11", "12"]],
+                                             "C": [["21", "22", "23", "24"]]},
+                                            {'A': [],
+                                             'B': [{'blocks': '3'}]},
+                                           "B"),
+                         {'A': [],
+                          'B': [{'blocks': ["1", "2", "3", "4"]}]})
 
 
 if __name__ == "__main__":
