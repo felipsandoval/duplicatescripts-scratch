@@ -135,7 +135,7 @@ def get_custominfo(block):
     return custom_info
 
 
-def custom_was_called(block, custom_dict, sprite):
+def add_custom_call(block, custom_dict, sprite):
     for j in custom_dict[sprite]:
         if j["custom_name"] == block["mutation"]["proccode"]:
             j["n_calls"] = j["n_calls"] + 1
@@ -150,6 +150,7 @@ def add_blocks_2custom(scripts_dict, custom_dict, sprite):
                 if j["blocks"] in k:
                     j["blocks"] = k
         iterate += 1
+    return custom_dict
 
 
 class DuplicateScripts():
@@ -203,7 +204,7 @@ class DuplicateScripts():
                     self.total_custom_blocks += 1
                 elif block["opcode"] == "procedures_call":
                     self.total_custom_calls += 1
-                    list_customb.append(custom_was_called(block,
+                    list_customb.append(add_custom_call(block,
                                                           custom_dict, sprite))
                 if block["topLevel"] and block["opcode"] not in LOOP_BLOCKS:
                     sucesive_list = self.search_next([], block_id)
@@ -212,7 +213,7 @@ class DuplicateScripts():
 
             # Add blocks to custom
             if bool(custom_dict[sprite]):
-                add_blocks_2custom(scripts_dict, custom_dict, sprite)
+                custom_dict = add_blocks_2custom(scripts_dict, custom_dict, sprite)
             # Add blocks to loops
             if bool(loops_dict):
                 scripts_dict = add_loop_block(loops_dict, scripts_dict, sprite)
