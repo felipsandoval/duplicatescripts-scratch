@@ -85,7 +85,7 @@ def start(filename, ignoring):
     """The first steps to obtain information from filename"""
     print("\n*** STARTING ANALYSIS  ***\n")
     if ignoring:
-        print("\\\ IGNORING BLOCKS ACTIVATED ///\n")
+        print("/// IGNORING BLOCKS ACTIVATED ///\n")
     json_project = obtaining_json(filename)
     if filename.endswith('.zip'):
         for i in json_project:
