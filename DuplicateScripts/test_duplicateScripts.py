@@ -237,6 +237,64 @@ class TestDuplicateScripts(unittest.TestCase):
                                        'custom_name': 'A',
                                        'n_calls': 1, 'blocks': 'any'}]})
 
+        self.assertEqual(custom_was_called({'opcode': 'procedures_call',
+                                            'mutation': {'proccode': 'A'}},
+                                           {'Stage': [],
+                                            'Objeto1': [{'type': 'test',
+                                                         'custom_name': 'A',
+                                                         'n_calls': 5,
+                                                         'blocks': 'any'}]},
+                                           "Objeto1"),
+                         {'Stage': [],
+                          'Objeto1': [{'type': 'test',
+                                       'custom_name': 'A',
+                                       'n_calls': 6, 'blocks': 'any'}]})
+
+        self.assertNotEqual(custom_was_called({'opcode': 'procedures_call',
+                                               'mutation': {'proccode': 'A'}},
+                                              {'Stage': [],
+                                               'Objeto1': [{'type': 'test',
+                                                            'custom_name': 'A',
+                                                            'n_calls': 3,
+                                                            'blocks': 'any'}]},
+                                              "Objeto1"),
+                            {'Stage': [],
+                             'Objeto1': [{'type': 'test',
+                                          'custom_name': 'A',
+                                          'n_calls': 6, 'blocks': 'any'}]})
+
+        self.assertRaises(KeyError, custom_was_called,
+                          {'mutation': {'': 'A'}},
+                          {'Stage': [], 'Objeto1': [{'type': 'test',
+                                                     'custom_name': 'A',
+                                                     'n_calls': 3,
+                                                     'blocks': 'any'}]},
+                          "Objeto1")
+
+        self.assertRaises(KeyError, custom_was_called,
+                          {'A': {'proccode': 'A'}},
+                          {'Stage': [], 'Objeto1': [{'type': 'test',
+                                                     'custom_name': 'A',
+                                                     'n_calls': 3,
+                                                     'blocks': 'any'}]},
+                          "Objeto1")
+
+        self.assertRaises(KeyError, custom_was_called,
+                          {'mutation': {'proccode': 'A'}},
+                          {'Stage': [], 'Objeto1': [{'type': 'test',
+                                                     'custom': 'B',
+                                                     'n_calls': 3,
+                                                     'blocks': 'any'}]},
+                          "Objeto1")
+
+        self.assertRaises(KeyError, custom_was_called,
+                          {'mutation': {'proccode': 'A'}},
+                          {'Stage': [], 'Objeto1': [{'type': 'test',
+                                                     'custom_name': 'A',
+                                                     'calls': 3,
+                                                     'blocks': 'any'}]},
+                          "Objeto1")
+
 
 if __name__ == "__main__":
     unittest.main()
