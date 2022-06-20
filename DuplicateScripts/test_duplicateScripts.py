@@ -295,35 +295,32 @@ class TestDuplicateScripts(unittest.TestCase):
                                                      'blocks': 'any'}]},
                           "Objeto1")
 
-    def test_add_blocks_2custom(self):
-        self.assertEqual(add_blocks_2custom({"A": [["1", "2", "4"]],
-                                             "B": [["any", "10"], ["1", "12"]],
-                                             "C": [["21", "22", "23", "24"]]},
-                                            {'A': [],
-                                             'B': [{'blocks': 'any'}]},
-                                            "B"),
+    def test_add_blocks(self):
+        self.assertEqual(add_blocks({"A": [["1", "2", "4"]],
+                                     "B": [["any", "10"], ["1", "12"]],
+                                     "C": [["21", "22", "23", "24"]]},
+                                    {'A': [], 'B': [{'blocks': 'any'}]},
+                                    "B"),
                          {'A': [],
                           'B': [{'blocks': ["any", "10"]}]})
 
-        self.assertEqual(add_blocks_2custom({"A": [["1", "2", "3", "4"]],
-                                             "B": [["any", "1"], ["11", "12"]],
-                                             "C": [["21", "22", "23", "24"]]},
-                                            {'A': [],
-                                             'B': [{'blocks': '11'}]},
-                                            "B"),
+        self.assertEqual(add_blocks({"A": [["1", "2", "3", "4"]],
+                                     "B": [["any", "1"], ["11", "12"]],
+                                     "C": [["21", "22", "23", "24"]]},
+                                    {'A': [], 'B': [{'blocks': '11'}]},
+                                    "B"),
                          {'A': [],
                           'B': [{'blocks': ["11", "12"]}]})
 
-        self.assertEqual(add_blocks_2custom({"B": [["1", "2", "3", "4"]],
-                                             "A": [["any", "10"], ["1", "12"]],
-                                             "C": [["21", "22", "23", "24"]]},
-                                            {'A': [],
-                                             'B': [{'blocks': '3'}]},
-                                            "B"),
+        self.assertEqual(add_blocks({"B": [["1", "2", "3", "4"]],
+                                     "A": [["any", "10"], ["1", "12"]],
+                                     "C": [["21", "22", "23", "24"]]},
+                                    {'A': [], 'B': [{'blocks': '3'}]},
+                                    "B"),
                          {'A': [],
                           'B': [{'blocks': ["1", "2", "3", "4"]}]})
 
-        self.assertRaises(KeyError, add_blocks_2custom,
+        self.assertRaises(KeyError, add_blocks,
                           {"B": [["1", "2", "3", "4"]],
                            "A": [["any", "10"], ["11", "12"]],
                            "C": [["21", "22", "23", "24"]]},
