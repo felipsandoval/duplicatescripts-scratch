@@ -96,7 +96,7 @@ def start(filename, ignoring):
             try:
                 main(filename, ignoring, json_file)
             except:
-                logging.info("FILE " + i + " HAS AN KEYERROR. CHECK DEEPLY")
+                logging.info("FILE " + i + " HAS AN KEYERROR.")
                 print("FILE: ", i, " HAS AN ERROR.")
                 print("\n---- CLOSING FILE FROM ZIP ", i, "  ----\n")
                 pass

@@ -142,7 +142,7 @@ def add_custom_call(block, custom_dict, sprite):
     return custom_dict
 
 
-def add_blocks_2custom(scripts_dict, custom_dict, sprite):
+def add_blocks(scripts_dict, custom_dict, sprite):
     iterate = 0
     while len(custom_dict[sprite]) != iterate:
         for j in custom_dict[sprite]:
@@ -213,7 +213,7 @@ class DuplicateScripts():
 
             # Add blocks to custom
             if bool(custom_dict[sprite]):
-                custom_dict = add_blocks_2custom(scripts_dict, custom_dict, sprite)
+                custom_dict = add_blocks(scripts_dict, custom_dict, sprite)
             # Add blocks to loops
             if bool(loops_dict):
                 scripts_dict = add_loop_block(loops_dict, scripts_dict, sprite)
