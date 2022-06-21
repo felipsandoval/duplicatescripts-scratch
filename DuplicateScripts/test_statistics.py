@@ -5,7 +5,7 @@
 # Also run with: python3 <test_XXX.py>
 # Run all test with: python -m unittest discover
 
-from statistics import *
+from statistics import json2dna
 import unittest
 
 
