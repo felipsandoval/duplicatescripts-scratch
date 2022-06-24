@@ -39,3 +39,6 @@ data_itemnumoflist
 data_lengthoflist
 argument_reporter_string_number
 argument_reporter_boolean
+END_IF
+END_LOOP
+END_ELSE
