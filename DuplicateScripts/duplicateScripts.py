@@ -83,7 +83,7 @@ def change_blockid(scripts_list, opcode_dict, ignore):
 def getloop_ids(block_value, blocks_dict, block_id):
     """Extract blockids from loops and conditional blocks"""
     loop_list = []
-    loop_list.append(block_id)
+    # loop_list.append(block_id)
     if "SUBSTACK" in block_value["inputs"]:
         start = block_value["inputs"]["SUBSTACK"][1]
         if start is not None:
@@ -110,10 +110,11 @@ def add_loop_block(loops_dict, scripts_dict, sprite):
     for parent in loops_dict:
         for list in scripts_dict[sprite]:
             if parent in list:  # SLICE INDEXING LIST
-                position = list.index(parent)
-                if position+1 != len(list):
-                    del list[position+1]  # DELETE DUPLICATE LOOP
-                    list[position+1:1] = loops_dict[parent]
+                pos = list.index(parent)
+                if pos+1 != len(list):
+                    if list[pos+1] == loops_dict[parent][0]:
+                         del list[pos+1]  # DELETE DUPLICATE LOOP
+                    list[pos+1:1] = loops_dict[parent]
                 else:
                     list.extend(loops_dict[parent])
     return scripts_dict
@@ -204,7 +205,11 @@ class DuplicateScripts():
                 if block["opcode"] in LOOP_BLOCKS:
                     loop_list = getloop_ids(block, self.blocks_dict, block_id)
                     if "parent" in block and block["parent"] is not None:
-                        loops_dict[block["parent"]] = loop_list
+                        if self.blocks_dict[block["parent"]]["opcode"] not in LOOP_BLOCKS:
+                            loop_list.insert(0, block_id)
+                            loops_dict[block["parent"]] = loop_list
+                        else:
+                            loops_dict[block_id] = loop_list
                     else:
                         scripts_dict[sprite].append(loop_list)
                         self.toplevel_list.append(block_id)
