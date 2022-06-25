@@ -11,7 +11,7 @@ CONTROL_MARKS = ["END_LOOP", "END_IF", "END_ELSE", "END_LOOP_CONDITIONAL"]
 
 def json2dna(duplicates):
     """
-    Given a JSON file as given in duplicateScriptsApprox.py
+    Given a JSON file as given in duplicateScripts.py
     returns the scripts as characters
     """
     scripts = []
