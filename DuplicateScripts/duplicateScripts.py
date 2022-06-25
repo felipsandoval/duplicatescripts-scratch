@@ -12,7 +12,7 @@ LOOP_BLOCKS = ["control_repeat", "control_forever", "control_if",
 
 CONDITIONALS = ["control_if", "control_if_else", "control_repeat_until"]
 
-CONTROL_MARKS = ["END_LOOP", "END_IF", "END_ELSE", "END_LOOP_CONDITIONAL"]
+CONTROL_MARKS = ["END_LOOP", "END_IF", "END_ELSE"]
 
 
 def find_dups(blocks):
@@ -73,8 +73,6 @@ def change_blockid(scripts_list, opcode_dict, ignore):
             if script[i] not in CONTROL_MARKS:
                 script[i] = opcode_dict[script[i]]
             if ignore and script[i] in ignore_list:
-                # script[i] = "IGNORED_BLOCK"
-                # Se debe eliminar o sencillamente ignorar. control marks?
                 script.pop(i)
                 ignored += 1
             else:
@@ -127,12 +125,23 @@ def get_custominfo(block):
                    "custom_name": block["mutation"]["proccode"],
                    "argument_names": block["mutation"]["argumentnames"],
                    "n_calls": 0}
-# "topLevel": block["topLevel"] worth ?
     if "parent" in block:
         custom_info.update({"blocks": block["parent"]})
     else:
         custom_info.update({"blocks": "empty"})
     return custom_info
+
+
+def get_totalblocks(scripts_dict):
+    """Return total blocks from my project"""
+    total = 0
+    ignore_list = blocks2ignore()
+    for sprite in scripts_dict:
+        for script in scripts_dict[sprite]:
+            for block in script:
+                if block not in ignore_list: 
+                    total += 1
+    return total
 
 
 def add_custom_call(block, custom_dict, sprite):
@@ -185,7 +194,7 @@ class DuplicateScripts():
             for blocks, blocks_value in sprites_dict["blocks"].items():
                 if isinstance(blocks_value, dict):
                     self.blocks_dict[blocks] = blocks_value
-                    self.total_blocks += 1
+                    # self.total_blocks += 1
             loops_dict = {}
             opcode_dict = {}   # block id -> block opcode.
             loop_list = []
@@ -221,6 +230,7 @@ class DuplicateScripts():
                                                  opcode_dict, self.ignore)
             self.total_sprites += 1
             self.total_scripts += len(scripts_dict[sprite])
+        self.total_blocks = get_totalblocks(scripts_dict)
         self.get_dup_intra_sprite(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
         self.all_customs_blocks = {"name": filename,
@@ -233,13 +243,11 @@ class DuplicateScripts():
     def get_dup_intra_sprite(self, scripts_dict):
         """Finds intra-sprite duplication"""
         self.intra_dups_list = []
-        self.intra_dups_list_try = []  # GREX PREGUNTA
         for sprite in scripts_dict:
             blocks = scripts_dict[sprite]
             dups = find_dups(blocks)
             if dups:
                 self.intra_dups_list.append(dups[0])
-                self.intra_dups_list_try.extend(self.intra_dups_list)
 
     def get_dup_project_wide(self, scripts_dict):
         """Finds project-wide duplication"""
@@ -262,18 +270,15 @@ class DuplicateScripts():
         """Output the duplicate scripts detected."""
         with open(filename + '-sprite.json',
                   'w') as outfile:
-            # json.dump(self.intra_dups_list, outfile)
-            json.dump(self.intra_dups_list_try, outfile)
+            json.dump(self.intra_dups_list, outfile)
         with open(filename + '-project.json',
                   'w') as outfile:
             json.dump(self.project_dups_list, outfile)
         with open(filename + '-custom.json',
                   'w') as outfile:
             json.dump(self.all_customs_blocks, outfile)
-        # count = sum([len(listElem) for listElem in self.intra_dups_list])
-        # count = len(self.intra_dups_list)
-        count = sum([len(listElem) for listElem in self.intra_dups_list_try])
-        count = len(self.intra_dups_list_try)
+        count = sum([len(listElem) for listElem in self.intra_dups_list])
+        count = len(self.intra_dups_list)
         result = ("\n" + str(self.total_blocks) +
                   " total blocks found\n")
         result += (str(self.total_scripts) + " total scripts found\n")
