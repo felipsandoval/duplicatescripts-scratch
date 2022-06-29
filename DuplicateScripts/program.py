@@ -16,7 +16,9 @@ import shutil
 import json
 import zipfile
 import logging  # Module used to store detailed events in a log file
-
+import datetime
+# import cProfile, pstats, io
+# from pstats import SortKey
 
 def sb3_json_extraction(fileIn):
     """
@@ -83,6 +85,9 @@ def main(filename, ignoring, json_content):
 
 def start(filename, ignoring):
     """The first steps to obtain information from filename"""
+    start_time = datetime.datetime.now()
+    # pr = cProfile.Profile()
+    # pr.enable()
     print("\n*** STARTING ANALYSIS  ***\n")
     if ignoring:
         print("/// IGNORING BLOCKS ACTIVATED ///\n")
@@ -103,6 +108,14 @@ def start(filename, ignoring):
     else:
         main(filename, ignoring, json_project)
     print("\n*** ENDING ANALYSIS ***\n")
+    end_time = datetime.datetime.now()
+    # pr.disable()
+    # s = io.StringIO()
+    # sortby = SortKey.CUMULATIVE
+    # ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    # ps.print_stats()
+    # print(s.getvalue())
+    # print(end_time - start_time)  # Pruebas de rendimiento
     logging.info("Program works as expected.")
 
 
