@@ -8,6 +8,8 @@ El programa tiene como finalidad la extracción de datos de código en proyectos
 
 Dado el archivo JSON dentro de los formatos de archivo de Scratch (.SB3) el objetivo es elegir y recopilar los atributos relevantes de cada Sprite, procesar esta información con un algoritmo de clustering, y dar una retroalimentación estadística e informativa tanto de la duplicidad intra-sprite como a nivel de proyecto.
 
+Este código está inspirado en el código de David Roldán del siguiente repositorio: https://github.com/davidrol6/duplicatescripts-scratch
+
 ### USO
 
 python3 program.py <fichero(.SB3 o .JSON o .ZIP)> [-i]
@@ -23,6 +25,8 @@ As evidenced in the scientific literature, Scratch projects do extensive use of 
 This program aims to extract data from code in Scratch projects to analyze its duplicity across the code, intra-sprite and project-wide. 
 
 Given the JSON file within Scratch file formats (.SB3), the goal is to choose and collect the relevant attributes of each Sprite, process this information with a clustering algorithm, and give statistical and informative feedback on both intra-sprite and project-level duplicity.
+
+This code is inspired by David Roldán works: https://github.com/davidrol6/duplicatescripts-scratch
 
 ### USAGE
 
