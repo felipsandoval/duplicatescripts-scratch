@@ -14,7 +14,7 @@ Este código está inspirado en el código de David Roldán del siguiente reposi
 
 python3 program.py <fichero(.SB3 o .JSON o .ZIP)> [-i]
 
--i (OPCIONAL): Ignora los opcodes de bloques especificados en IgnoreBlocks.txt
+-i (OPCIONAL): Ignora los opcodes de bloques especificados en IgnoreBlocks.tx. También se ignoran las marcas de control: END_LOOP, END_IF y END_ELSE_IF.
 
 Duplicate Scripts: CLONE AND ABSTRACTION ANALYSIS ON SCRATCH PROJECTS
 =============
@@ -32,4 +32,4 @@ This code takes inspiration by David Roldán works: https://github.com/davidrol6
 
 python3 program.py <file(.SB3 or .JSON or .ZIP)> [-i]
 
--i (OPTIONAL): Ignores blocks opcodes specified in IgnoreBlocks.txt
+-i (OPTIONAL): Ignores blocks opcodes specified in IgnoreBlocks.txt. Also ignores the control marks: END_LOOP, END_IF y END_ELSE_IF.
