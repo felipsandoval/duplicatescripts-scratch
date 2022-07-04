@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+# forked from davidrol6/duplicatescripts-scratch @davidrol6
 # Github: @felipsandoval
 
 import json
