@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+# forked from davidrol6/duplicatescripts-scratch @davidrol6
 # Github: @felipsandoval
 
 # My Scripts
@@ -19,6 +20,7 @@ import logging  # Module used to store detailed events in a log file
 import datetime
 # import cProfile, pstats, io
 # from pstats import SortKey
+
 
 def sb3_json_extraction(fileIn):
     """

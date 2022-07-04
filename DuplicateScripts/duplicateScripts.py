@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+# forked from davidrol6/duplicatescripts-scratch @davidrol6
 # Github: @felipsandoval
 
 from difflib import SequenceMatcher
@@ -113,7 +114,7 @@ def add_loop_block(loops_dict, scripts_dict, sprite):
                 pos = list.index(parent)
                 if pos+1 != len(list):
                     if list[pos+1] == loops_dict[parent][0]:
-                         del list[pos+1]  # DELETE DUPLICATE LOOP
+                        del list[pos+1]  # DELETE DUPLICATE LOOP
                     list[pos+1:1] = loops_dict[parent]
                 else:
                     list.extend(loops_dict[parent])
@@ -140,7 +141,7 @@ def get_totalblocks(scripts_dict):
     for sprite in scripts_dict:
         for script in scripts_dict[sprite]:
             for block in script:
-                if block not in ignore_list: 
+                if block not in ignore_list:
                     total += 1
     return total
 
@@ -219,7 +220,7 @@ class DuplicateScripts():
                 elif block["opcode"] == "procedures_call":
                     self.total_custom_calls += 1
                     list_customb.append(add_custom_call(block,
-                                                          custom_dict, sprite))
+                                                        custom_dict, sprite))
                 if block["topLevel"] and block["opcode"] not in LOOP_BLOCKS:
                     sucesive_list = self.search_next([], block_id)
                     scripts_dict[sprite].append(sucesive_list)
