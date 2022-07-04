@@ -26,7 +26,7 @@ This program aims to extract data from code in Scratch projects to analyze its d
 
 Given the JSON file within Scratch file formats (.SB3), the goal is to choose and collect the relevant attributes of each Sprite, process this information with a clustering algorithm, and give statistical and informative feedback on both intra-sprite and project-level duplicity.
 
-This code is inspired by David Roldán works: https://github.com/davidrol6/duplicatescripts-scratch
+This code takes inspiration by David Roldán works: https://github.com/davidrol6/duplicatescripts-scratch
 
 ### USAGE
 
