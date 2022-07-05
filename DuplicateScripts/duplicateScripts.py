@@ -209,7 +209,8 @@ class DuplicateScripts():
                 if block["opcode"] in LOOP_BLOCKS:
                     loop_list = getloop_ids(block, self.blocks_dict, block_id)
                     if "parent" in block and block["parent"] is not None:
-                        if self.blocks_dict[block["parent"]]["opcode"] not in LOOP_BLOCKS:
+                        if block["parent"] in self.blocks_dict and\
+                           self.blocks_dict[block["parent"]]["opcode"] not in LOOP_BLOCKS:
                             loop_list.insert(0, block_id)
                             loops_dict[block["parent"]] = loop_list
                         else:
