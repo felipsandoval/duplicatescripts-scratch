@@ -44,21 +44,24 @@ def blocks2ignore():
     return ignore_list
 
 
-def get_next_blocks(start, block_dict):
+def get_next_blocks(start, blocks_dict):
     """Get the next block_ids"""
     # SPECIAL CASE: there is only a single block inside a loop
     b_inside_loop = []
     b_inside_loop.append(start)
-    next_block_id = block_dict[start]["next"]
+    if start in blocks_dict:
+        next_block_id = blocks_dict[start]["next"]
+    else:
+        next_block_id = None
     if next_block_id is None:
         n_block = None
     else:
-        n_block = block_dict[next_block_id]
+        n_block = blocks_dict[next_block_id]
     while n_block is not None:
         b_inside_loop.append(next_block_id)
-        if block_dict[next_block_id]["next"] is not None:
-            next_block_id = block_dict[next_block_id]["next"]
-            n_block = block_dict[next_block_id]
+        if blocks_dict[next_block_id]["next"] is not None:
+            next_block_id = blocks_dict[next_block_id]["next"]
+            n_block = blocks_dict[next_block_id]
         else:
             n_block = None
     return b_inside_loop
