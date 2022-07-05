@@ -40,8 +40,6 @@ class TestDuplicateScripts(unittest.TestCase):
                                                   "empty": {"next": "Wrong"}}),
                          ["loop"])
 
-        self.assertRaises(KeyError, get_next_blocks, None,
-                          {"loop": {"next": None}, "empty": {"next": "Wrong"}})
 
     def test_change_blockid(self):
         self.assertEqual(change_blockid([["A", "B", "C"], ["D", "E", "F"]],
@@ -80,7 +78,7 @@ class TestDuplicateScripts(unittest.TestCase):
                                       "tres": {"next": "cuatro"},
                                       "cuatro": {"next": None}},
                                      "control_repeat"),
-                         ["control_repeat", "END_LOOP"])
+                         ["END_LOOP"])
 
         self.assertEqual(getloop_ids({'opcode': 'control_if', 'next': None,
                                       'inputs': {'SUBSTACK': [2, 'uno']}},
@@ -89,7 +87,7 @@ class TestDuplicateScripts(unittest.TestCase):
                                       "tres": {"next": "cuatro"},
                                       "cuatro": {"next": None}},
                                      "control_if"),
-                         ["control_if", "uno", "dos", "tres", "cuatro",
+                         ["uno", "dos", "tres", "cuatro",
                           "END_IF", "END_LOOP"])
 
         self.assertNotEqual(getloop_ids({'opcode': 'control_if', 'next': None,
@@ -99,7 +97,7 @@ class TestDuplicateScripts(unittest.TestCase):
                                          "tres": {"next": "cuatro"},
                                          "cuatro": {"next": None}},
                                         "control_if"),
-                            ["control_if", "uno", "dos", "tres", "cuatro",
+                            ["uno", "dos", "tres", "cuatro",
                              "END_LOOP"])
 
         self.assertEqual(getloop_ids({'opcode': 'control_if_else', 'next': "a",
@@ -110,7 +108,7 @@ class TestDuplicateScripts(unittest.TestCase):
                                       "tres": {"next": "cuatro"},
                                       "cuatro": {"next": None}},
                                      "control_if_else"),
-                         ["control_if_else", "uno", "dos", "END_IF",
+                         ["uno", "dos", "END_IF",
                           "tres", "cuatro", "END_ELSE", "END_LOOP"])
 
         self.assertEqual(getloop_ids({'opcode': 'control_if_else', 'next': "a",
@@ -120,7 +118,7 @@ class TestDuplicateScripts(unittest.TestCase):
                                       "tres": {"next": "cuatro"},
                                       "cuatro": {"next": None}},
                                      "control_if_else"),
-                         ["control_if_else", "uno", "dos", "END_IF",
+                         ["uno", "dos", "END_IF",
                           "END_ELSE", "END_LOOP"])
 
         self.assertNotEqual(getloop_ids({'opcode': 'control_if_else',
@@ -130,7 +128,7 @@ class TestDuplicateScripts(unittest.TestCase):
                                          "tres": {"next": "cuatro"},
                                          "cuatro": {"next": None}},
                                         "control_if_else"),
-                            ["control_if_else", "uno", "dos", "END_IF",
+                            ["uno", "dos", "END_IF",
                              "END_LOOP"])
 
         self.assertEqual(getloop_ids({'opcode': 'control_if_else', 'next': "a",
@@ -140,7 +138,7 @@ class TestDuplicateScripts(unittest.TestCase):
                                       "tres": {"next": "cuatro"},
                                       "cuatro": {"next": None}},
                                      "control_if_else"),
-                         ["control_if_else", "END_IF", "END_ELSE", "END_LOOP"])
+                         ["END_IF", "END_ELSE", "END_LOOP"])
 
     def test_add_loop_block(self):
         self.assertEqual(add_loop_block({'3': ["4", "b", "i", "e", "n"]},
