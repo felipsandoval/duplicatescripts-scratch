@@ -5,3 +5,4 @@ DuplicateScripts/project.json
 DuplicateScripts/blocks.json
 *.txt
 DuplicateScripts/test/
+DuplicateScripts/desktop.ini
