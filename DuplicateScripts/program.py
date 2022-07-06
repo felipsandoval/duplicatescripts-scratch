@@ -75,7 +75,7 @@ def main(filename, ignoring, json_content):
         + '-project.json'
     print("\n-- GETTING INTRA SPRITE STATISTICS --\n")
     statistics.main(json.loads(open(spritefile).read()))
-    print("\n-- GETTING INTRA PROJECT STATISTICS --\n")
+    print("\n-- GETTING PROJECT WIDE STATISTICS --\n")
     statistics.main(json.loads(open(projectfile).read()))
     print("\n-- STARTING CLUSTER.PY SCRIPT --\n")
     cluster.main(json_content)
