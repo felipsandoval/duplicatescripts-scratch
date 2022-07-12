@@ -21,15 +21,17 @@ def find_dups(blocks):
     Given a list of sequences of blocks opcodes
     returns those subsequences that are duplicated
     """
+    temp_blocks = blocks
     return_list = []
-    for i in range(len(blocks)):
-        for j in range(i + 1, len(blocks)):
-            word = SequenceMatcher(None, blocks[i],
-                                   blocks[j])
-            match = word.find_longest_match(0, len(blocks[i]),
-                                            0, len(blocks[j]))
+    for i in range(len(temp_blocks)):
+        for j in range(i + 1, len(temp_blocks)):
+            word = SequenceMatcher(None, temp_blocks[i],
+                                   temp_blocks[j])
+            match = word.find_longest_match(0, len(temp_blocks[i]),
+                                            0, len(temp_blocks[j]))
             if match.size >= N_BLOCKS:
-                return_list.append(blocks[i][match.a:match.a + match.size])
+                return_list.append(temp_blocks[i][match.a:match.a + match.size])
+                temp_blocks[j] = ["listo", "revisado"]
     return return_list
 
 
@@ -242,6 +244,7 @@ class DuplicateScripts():
             self.total_scripts += len(scripts_dict[sprite])
         self.total_blocks = get_totalblocks(scripts_dict)
         self.get_dup_intra_sprite(scripts_dict)
+        #print(scripts_dict)
         self.get_dup_project_wide(scripts_dict)
         self.all_customs_blocks = {"name": filename,
                                    "custom_blocks": list_customb,
