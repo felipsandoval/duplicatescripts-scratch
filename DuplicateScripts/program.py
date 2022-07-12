@@ -50,7 +50,8 @@ def obtaining_json(filename):
         list_filenames = zip_file.namelist()
         if os.path.exists("test"):
             shutil.rmtree("test")
-        os.mkdir("test", 0o666)
+        # os.mkdir("test", 0o666)
+        os.mkdir("test", 0o777)  # Works on MAC.
         for file in list_filenames:
             if file.endswith('.json'):
                 # zip_file.extract(file)
